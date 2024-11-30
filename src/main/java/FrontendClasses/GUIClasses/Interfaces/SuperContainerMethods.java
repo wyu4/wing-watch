@@ -1,4 +1,4 @@
-package GUIClasses.Interfaces;
+package FrontendClasses.GUIClasses.Interfaces;
 
 /** Interface containing some of the super methods of a container object. This is to prevent indefinite recursion from Accurate Containers. */
 public interface SuperContainerMethods {

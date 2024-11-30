@@ -1,39 +1,31 @@
-package GUIClasses.AccurateUIComponents;
+package FrontendClasses.GUIClasses.AccurateUIComponents;
 
-import GUIClasses.DataTypes.FloatCoordinate;
-import GUIClasses.AccurateContainerManager;
-import GUIClasses.Interfaces.AccurateContainer;
-import GUIClasses.Interfaces.SuperContainerMethods;
+import FrontendClasses.GUIClasses.AccurateContainerManager;
+import FrontendClasses.GUIClasses.DataTypes.FloatCoordinate;
+import FrontendClasses.GUIClasses.Interfaces.AccurateContainer;
+import FrontendClasses.GUIClasses.Interfaces.SuperContainerMethods;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowEvent;
 
-public class AccurateFrame extends JFrame implements AccurateContainer, SuperContainerMethods {
+public class AccuratePanel extends JPanel implements AccurateContainer, SuperContainerMethods {
     private final AccurateContainerManager manager;
 
     /**
-     * Create a new AccurateFrame object.
+     * Create a new AccuratePanel object.
      */
-    public AccurateFrame() {
-        this("UnknownAccFrame");
+    public AccuratePanel() {
+        this("UnknownAccPanel");
     }
 
     /**
-     * Create a new AccurateFrame object.
-     * @param title Title of the frame.
+     * Create a new AccuratePanel object.
+     * @param name Name of the panel.
      */
-    public AccurateFrame(String title) {
+    public AccuratePanel(String name) {
         manager = new AccurateContainerManager(this, this);
-        setTitle(title);
+        setName(name);
         setLayout(null);
-    }
-
-    /**
-     * Programmatically closes the frame object by processing a Window Event.
-     */
-    public void closeFrame() {
-        processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
     @Override

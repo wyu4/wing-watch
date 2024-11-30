@@ -1,6 +1,6 @@
-package GUIClasses;
+package FrontendClasses.GUIClasses;
 
-import GUIClasses.AccurateUIComponents.AccurateLabel;
+import FrontendClasses.GUIClasses.AccurateUIComponents.AccurateLabel;
 
 public class AnimatedTextLabel extends AccurateLabel {
     private String goalText, currentAttemptedText,displayedText;

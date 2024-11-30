@@ -1,8 +1,8 @@
-package GUIClasses;
+package FrontendClasses.GUIClasses;
 
-import GUIClasses.DataTypes.FloatCoordinate;
-import GUIClasses.Interfaces.AccurateContainer;
-import GUIClasses.Interfaces.SuperContainerMethods;
+import FrontendClasses.GUIClasses.DataTypes.FloatCoordinate;
+import FrontendClasses.GUIClasses.Interfaces.AccurateContainer;
+import FrontendClasses.GUIClasses.Interfaces.SuperContainerMethods;
 
 import java.awt.*;
 

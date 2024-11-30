@@ -1,7 +1,7 @@
-package GUIClasses.Kinematics;
+package FrontendClasses.GUIClasses.Kinematics;
 
-import GUIClasses.DataTypes.FloatCoordinate;
-import GUIClasses.AccurateUIComponents.AccuratePanel;
+import FrontendClasses.GUIClasses.AccurateUIComponents.AccuratePanel;
+import FrontendClasses.GUIClasses.DataTypes.FloatCoordinate;
 
 import java.awt.*;
 

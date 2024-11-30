@@ -1,6 +1,6 @@
-package GUIClasses.Interfaces;
+package FrontendClasses.GUIClasses.Interfaces;
 
-import GUIClasses.DataTypes.FloatCoordinate;
+import FrontendClasses.GUIClasses.DataTypes.FloatCoordinate;
 
 import java.awt.*;
 

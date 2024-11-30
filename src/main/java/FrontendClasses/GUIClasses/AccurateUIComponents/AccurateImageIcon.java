@@ -1,4 +1,4 @@
-package GUIClasses.AccurateUIComponents;
+package FrontendClasses.GUIClasses.AccurateUIComponents;
 
 import javax.swing.*;
 import java.awt.*;

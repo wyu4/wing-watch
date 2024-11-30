@@ -1,4 +1,4 @@
-package GUIClasses.DataTypes;
+package FrontendClasses.GUIClasses.DataTypes;
 
 import java.awt.*;
 
