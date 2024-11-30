@@ -1,5 +1,7 @@
 package BackendClasses.Events;
 
+import BackendClasses.SkyClock;
+
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
@@ -27,7 +29,15 @@ public class EventData {
 
     @Override
     public String toString() {
-        return name;
+        int remainingTime = getSecondsLeftTillNext(SkyClock.getSkyTime());
+        return "{" + name + ":" +
+                String.format("%02d:%02d:%02d:%02d",
+                        remainingTime/(60*60*24),
+                        remainingTime/(60*60) % 24,
+                        remainingTime/(60) % 60,
+                        remainingTime % 60
+                        ) +
+                "}";
     }
 
     @Override

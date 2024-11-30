@@ -11,8 +11,10 @@ public class Events {
 
     public static final List<EventData> WAX_EVENTS = new ArrayList<>();
 
-    public static final EventData GEYSER = createWaxEvent(N_GEYSER, 2*60, 5);
-    public static final EventData GRANDMA = createWaxEvent(N_GRANDMA, 2*60, 35);
+    private static final EventData GEYSER = createWaxEvent(N_GEYSER, 2*60, 5);
+    private static final EventData GRANDMA = createWaxEvent(N_GRANDMA, 2*60, 35);
+    private static final EventData TURTLE = createWaxEvent(N_TURTLE, 2*60, 50);
+    private static final EventData SKATER = createWaxEvent(N_SKATER, 2*60, 60);
 
     private static EventData createWaxEvent(String name, int cooldownMinutes, int minutesOffset) {
         EventData waxEvent = new EventData();

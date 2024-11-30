@@ -45,4 +45,6 @@ public class SkyClock {
                 ZoneId.of(REGION_DATA.get(US_PACIFIC_TIME_ZONE))
         );
     }
+
+    static {refreshData();}
 }
