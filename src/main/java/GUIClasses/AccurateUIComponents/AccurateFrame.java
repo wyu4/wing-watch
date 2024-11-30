@@ -1,6 +1,6 @@
 package GUIClasses.AccurateUIComponents;
 
-import DataTypes.FloatCoordinate;
+import GUIClasses.DataTypes.FloatCoordinate;
 import GUIClasses.AccurateContainerManager;
 import GUIClasses.Interfaces.AccurateContainer;
 import GUIClasses.Interfaces.SuperContainerMethods;

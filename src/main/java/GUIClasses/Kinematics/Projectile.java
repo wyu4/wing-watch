@@ -1,6 +1,6 @@
 package GUIClasses.Kinematics;
 
-import DataTypes.FloatCoordinate;
+import GUIClasses.DataTypes.FloatCoordinate;
 import GUIClasses.AccurateUIComponents.AccuratePanel;
 
 import java.awt.*;
