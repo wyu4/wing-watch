@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 public class EventData {
     private final String name;
-    private final Function<ZonedDateTime, Integer> secondsLeftTillNext;
+    private final Function<ZonedDateTime, Integer> timeLeft;
 
     public static final String N_GEYSER = "Polluted Geyser";
     public static final String N_GRANDMA = "Grandma's Dinner Event";
@@ -14,15 +14,14 @@ public class EventData {
 
     public EventData() {
         name = "Unknown";
-        secondsLeftTillNext = (time) -> 0;
+        timeLeft = (time) -> 0;
     }
 
     public EventData(String name, int cooldownMinutes, int minutesOffset) {
         this.name = name;
-        this.secondsLeftTillNext = (time) -> {
-            int currentTime = time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60);
-            return (cooldownMinutes*60) - (currentTime - (minutesOffset*60) + (cooldownMinutes*60)) % (cooldownMinutes*60);
-        };
+        this.timeLeft =
+                (time) -> (cooldownMinutes*60) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (minutesOffset*60) + (cooldownMinutes*60))
+                        % (cooldownMinutes*60);
     }
 
     public String getName() {
@@ -30,7 +29,7 @@ public class EventData {
     }
 
     public int getTimeLeft(ZonedDateTime skyTime) {
-        return secondsLeftTillNext.apply(skyTime);
+        return timeLeft.apply(skyTime);
     }
 
     @Override
@@ -41,7 +40,7 @@ public class EventData {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof EventData e) {
-            return (e.getName().equals(this.getName())) && (e.secondsLeftTillNext.equals(this.secondsLeftTillNext));
+            return (e.getName().equals(this.getName())) && (e.timeLeft.equals(this.timeLeft));
         }
         return false;
     }

@@ -2,6 +2,7 @@ package com.WingWatch.FrontEnd;
 
 import com.WingWatch.SkyClock;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
@@ -9,27 +10,48 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 
 public class App extends JFrame implements ActionListener, WindowListener {
-    private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+    public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
     private final OrderedSchedule eventSchedule = new OrderedSchedule();
-    private Long lastFrame = null;
+    private Long lastFrame = null, test = System.currentTimeMillis();
+    private ZonedDateTime testTime1, testTime2;
 
     public App() {
         super("Wing Watch SNAPSHOT");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setSize(SCREEN_SIZE.width/3, SCREEN_SIZE.width/3);
+        setMinimumSize(new Dimension(SCREEN_SIZE.width/3, SCREEN_SIZE.height/3));
+        setMaximumSize(SCREEN_SIZE);
+        setPreferredSize(getMinimumSize());
+        setSize(getMinimumSize());
 
         eventSchedule.trackEvents(SkyClock.WAX_EVENTS);
 
         addWindowListener(this);
         add(eventSchedule, BorderLayout.CENTER);
+        add(new JButton("Test"), BorderLayout.NORTH);
+
+        refreshData();
 
         setVisible(true);
         revalidate();
+    }
+
+    private void refreshData() {
+        EventQueue.invokeLater(() -> {
+            try {
+                SkyClock.refreshData();
+                testTime1 = ZonedDateTime.of(2024, 12, 7, 0, 5, 0, 0, SkyClock.getSkyTime().getZone());
+                testTime2 = ZonedDateTime.of(2024, 12, 7, 3, 5, 0, 0, SkyClock.getSkyTime().getZone());
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
@@ -41,11 +63,20 @@ public class App extends JFrame implements ActionListener, WindowListener {
             lastFrame = System.currentTimeMillis();
             return;
         }
-//        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 7, 3, 5, 0, 0, SkyClock.getSkyTime().getZone());
+//        if (test1 == null || test2 == null) {
+//            return;
+//        }
+//        ZonedDateTime skyTime = null;
+//        if (System.currentTimeMillis() - test > 5000) {
+//            skyTime = testTime2;
+//        } else {
+//            skyTime = testTime1;
+//        }
         ZonedDateTime skyTime = SkyClock.getSkyTime();
         long delta = System.currentTimeMillis() - lastFrame;
+        float timeMod = (float) delta / runtime.getDelay();
 
-        eventSchedule.refreshData(skyTime);
+        eventSchedule.step(skyTime, timeMod);
 
         repaint();
         lastFrame = System.currentTimeMillis();
