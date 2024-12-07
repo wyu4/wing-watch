@@ -17,43 +17,22 @@ public class Requests {
         // Create a URL Object
         url = new URI(targetUrl).toURL();
 
-        // Create an HTTP Connection
-        try {
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET"); // Set the method to s GET Request
-        } catch (IOException e) {
-            throw new IOException("HTTP Connection for \"" + targetUrl + "\":" + e.getMessage());
-        }
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET"); // Set the method to s GET Request
 
-        // Perform the request
-        try{
-            return connection.getInputStream();
-        } catch (IOException e) {
-            throw new IOException("GET REQUEST for \"" + targetUrl + "\": " + e.getMessage());
-        }
+        return connection.getInputStream();
     }
 
-    public static StringBuilder requestGetString(String targetUrl) {
+    public static StringBuilder requestGetString(String targetUrl) throws IOException, URISyntaxException {
         final StringBuilder result = new StringBuilder();
-        InputStream stream = null;
-
-        try {
-            stream = getInputStream(targetUrl);
-        } catch (URISyntaxException e) {
-            return result.append("\nconst error = ").append("'URISyntaxException while creating input stream for \"").append(targetUrl).append("\": ").append(e.getMessage()).append("';\n");
-        } catch (IOException e) {
-            return result.append("\nconst error = ").append("'IOException while creating input stream for \"").append(targetUrl).append("\": ").append(e.getMessage()).append("';\n");
-        }
+        InputStream stream = getInputStream(targetUrl);
 
         // Perform the request
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
-            for (String line; (line = reader.readLine()) != null; ) {
-                result.append(line);
-            }
-            stream.close();
-        } catch (IOException e) {
-            return result.append("\nconst error = ").append("'IOException while reading input stream for \"").append(targetUrl).append("\": ").append(e.getMessage()).append("';\n");
+       BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        for (String line; (line = reader.readLine()) != null; ) {
+            result.append(line);
         }
+        stream.close();
         return result.append("\nconst error = 'None';");
     }
 
