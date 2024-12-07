@@ -2,13 +2,8 @@ package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -99,7 +94,9 @@ public class OrderedSchedule extends JPanel {
 }
 class ScheduleComponent extends JPanel {
     private final EventData linkedData;
+    private final JPanel contentPanel = new JPanel();
     private final JLabel indexLabel = new JLabel();
+    private final FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
     private int index = 0;
 
     public ScheduleComponent(EventData linkedData) {
@@ -110,7 +107,13 @@ class ScheduleComponent extends JPanel {
         setLayout(null);
         setDoubleBuffered(true);
 
-        add(indexLabel);
+        contentPanel.setBackground(UIManager.getColor("Schedule.ContentBackground"));
+        contentPanel.setLayout(layout);
+        contentPanel.setDoubleBuffered(true);
+
+        contentPanel.add(indexLabel);
+        contentPanel.add(new JProgressBar());
+        add(contentPanel);
     }
 
     public EventData getLinkedData() {
@@ -126,7 +129,7 @@ class ScheduleComponent extends JPanel {
     }
 
     private void moveToIndexLocation(Component parent, float timeMod) {
-        int desiredY = (index * getHeight()) + ((index+1)*5);
+        int desiredY = (index * getHeight()) + ((index + 1) * (int)(App.SCREEN_SIZE.width*0.005)/2);
         double increment = App.SCREEN_SIZE.height*0.0003*timeMod;
 
         if (desiredY - getY() > 0) {
@@ -152,7 +155,16 @@ class ScheduleComponent extends JPanel {
         if (parent != null) {
             resizeBasedOnParent(parent);
             moveToIndexLocation(parent, timeMod);
-            indexLabel.setBounds(0, 0, getWidth(), getHeight());
+            contentPanel.setBounds(
+                    (int)(App.SCREEN_SIZE.width*0.005)/2,0,
+                    getWidth()-((int)(App.SCREEN_SIZE.width*0.005)), getHeight()
+            );
+
+            Font currentIndexFont = indexLabel.getFont();
+            indexLabel.setFont(new Font(currentIndexFont.getName(), currentIndexFont.getStyle(), contentPanel.getHeight()/3));
+            if (indexLabel.getPreferredSize().getWidth() > 0) {
+                indexLabel.setPreferredSize(new Dimension(indexLabel.getWidth(), contentPanel.getHeight()));
+            }
             indexLabel.setText(linkedData.getName()  + " - " + formatTimeLeft(linkedData.getTimeLeft(skyTime)));
         }
     }
