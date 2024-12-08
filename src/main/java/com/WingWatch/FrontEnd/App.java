@@ -2,14 +2,8 @@ package com.WingWatch.FrontEnd;
 
 import com.WingWatch.SkyClock;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.Timer;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +12,8 @@ import java.time.ZonedDateTime;
 public class App extends JFrame implements ActionListener, WindowListener {
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
-    private final OrderedSchedule eventSchedule = new OrderedSchedule();
+    private final JTabbedPane tabs = new JTabbedPane();
+    private final OrderedSchedule waxSchedule = new OrderedSchedule(), passageSchedule = new OrderedSchedule();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
 
     private Long lastFrame = null, test = System.currentTimeMillis();
@@ -33,10 +28,16 @@ public class App extends JFrame implements ActionListener, WindowListener {
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
 
-        eventSchedule.trackEvents(SkyClock.WAX_EVENTS);
+//        tabs.setLayout(new GridLayout(1, 1));
+
+        waxSchedule.trackEvents(SkyClock.WAX_EVENTS);
+        passageSchedule.trackEvents(SkyClock.WAX_EVENTS);
+
+        tabs.add("Wax", waxSchedule);
+        tabs.add("Passage Quests", passageSchedule);
 
         addWindowListener(this);
-        add(eventSchedule, BorderLayout.CENTER);
+        add(tabs, BorderLayout.CENTER);
         add(globalClockDisplay, BorderLayout.NORTH);
 
         refreshData();
@@ -79,7 +80,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = (float) delta / runtime.getDelay();
 
-        eventSchedule.step(skyTime, timeMod);
+        OrderedSchedule.stepAll(skyTime, timeMod);
         globalClockDisplay.step(skyTime);
 
         repaint();

@@ -7,14 +7,24 @@ import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class OrderedSchedule extends JScrollPane {
+    private static final List<OrderedSchedule> SCHEDULES = new ArrayList<>();
+
     private final HashMap<EventData, EventDisplay> schedule = new HashMap<>();
     private final JViewport viewport = new JViewport();
     private final JLayeredPane contentPane = new JLayeredPane();
     private EventData[] orderedEvents;
+
+    public static void stepAll(ZonedDateTime skyTime, float timeMod) {
+        for (OrderedSchedule schedule : SCHEDULES) {
+            schedule.step(skyTime, timeMod);
+        }
+    }
 
     public OrderedSchedule() {
         setName("OrderedSchedule");
@@ -32,6 +42,8 @@ public class OrderedSchedule extends JScrollPane {
         contentPane.setBackground(new Color(0, 0, 0, 0));
         viewport.setView(contentPane);
         setViewport(viewport);
+
+        SCHEDULES.add(this);
     }
 
     public void trackEvents(EventData[] events) {
@@ -69,6 +81,10 @@ public class OrderedSchedule extends JScrollPane {
     }
 
     public void step(ZonedDateTime skyTime, float timeMod) {
+        if (getParent() == null || !isVisible()) {
+            return;
+        }
+
         sortEvents(skyTime);
         Component[] componentsToShow = new EventDisplay[orderedEvents.length];
         Component[] componentsShown = contentPane.getComponents();
