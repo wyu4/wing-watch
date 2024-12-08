@@ -34,16 +34,24 @@ public abstract class SkyClock {
     }
 
     public static final EventData[] WAX_EVENTS = {
-            new EventData(EventData.N_GEYSER, 2*60, 5),
-            new EventData(EventData.N_GRANDMA, 2*60, 35),
-            new EventData(EventData.N_TURTLE, 2*60, 50),
-            new EventData(EventData.N_SKATER, 2*60, 60)
+            new EventData(EventData.N_GEYSER, 2*60*60, (5*60) + 11, 10*60),
+            new EventData(EventData.N_GRANDMA, 2*60*60, 35*60 + 20, 10*60),
+            new EventData(EventData.N_TURTLE, 2*60*60, 50*60 + 17, 10*60),
+            new EventData(EventData.N_SKATER, 2*60*60, 60*60, 10*60)
     };
 
     public static void refreshData() throws IOException, URISyntaxException {
         REGION_DATA = getVariables(REGION_URL);
     }
 
+    public static String formatTimeLeft(long remainingTime) {
+        return String.format("%02d : %02d : %02d : %02d",
+                remainingTime/(60*60*24),
+                remainingTime/(60*60) % 24,
+                remainingTime/(60) % 60,
+                remainingTime % 60
+        );
+    }
 
     public static ZonedDateTime getSkyTime() {
         return ZonedDateTime.now(

@@ -4,6 +4,7 @@ import com.WingWatch.SkyClock;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -18,6 +19,8 @@ public class App extends JFrame implements ActionListener, WindowListener {
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
     private final OrderedSchedule eventSchedule = new OrderedSchedule();
+    private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
+
     private Long lastFrame = null, test = System.currentTimeMillis();
     private ZonedDateTime testTime1, testTime2;
 
@@ -25,7 +28,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         super("Sky Events");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(SCREEN_SIZE.width/3, SCREEN_SIZE.height/3));
+        setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2.5f), SCREEN_SIZE.height/3));
         setMaximumSize(SCREEN_SIZE);
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
@@ -34,6 +37,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
         addWindowListener(this);
         add(eventSchedule, BorderLayout.CENTER);
+        add(globalClockDisplay, BorderLayout.NORTH);
 
         refreshData();
 
@@ -76,6 +80,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         float timeMod = (float) delta / runtime.getDelay();
 
         eventSchedule.step(skyTime, timeMod);
+        globalClockDisplay.step(skyTime);
 
         repaint();
         lastFrame = System.currentTimeMillis();

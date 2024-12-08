@@ -6,6 +6,7 @@ import java.util.function.Function;
 public class EventData {
     private final String name;
     private final Function<ZonedDateTime, Integer> timeLeft;
+    private final int cooldown, duration;
 
     public static final String N_GEYSER = "Polluted Geyser";
     public static final String N_GRANDMA = "Grandma's Dinner Event";
@@ -15,13 +16,17 @@ public class EventData {
     public EventData() {
         name = "Unknown";
         timeLeft = (time) -> 0;
+        cooldown = 0;
+        duration = 0;
     }
 
-    public EventData(String name, int cooldownMinutes, int minutesOffset) {
+    public EventData(String name, int cooldownSeconds, int offsetSeconds, int durationSeconds) {
         this.name = name;
         this.timeLeft =
-                (time) -> (cooldownMinutes*60) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (minutesOffset*60) + (cooldownMinutes*60))
-                        % (cooldownMinutes*60);
+                (time) -> (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (offsetSeconds) + (cooldownSeconds))
+                        % (cooldownSeconds);
+        this.cooldown = cooldownSeconds;
+        this.duration = durationSeconds;
     }
 
     public String getName() {
@@ -30,6 +35,18 @@ public class EventData {
 
     public int getTimeLeft(ZonedDateTime skyTime) {
         return timeLeft.apply(skyTime);
+    }
+
+    public boolean active(ZonedDateTime skyTime) {
+        return (cooldown - getTimeLeft(skyTime)) <= duration;
+    }
+
+    public float percentElapsed(ZonedDateTime skyTime) {
+        if (active(skyTime)) {
+            return Math.clamp(1f - ((float) (cooldown - getTimeLeft(skyTime)) / duration), 0, 1f);
+        } else {
+            return Math.clamp(((float) ((cooldown - duration) - getTimeLeft(skyTime)) / (cooldown - duration)), 0, 1f);
+        }
     }
 
     @Override
