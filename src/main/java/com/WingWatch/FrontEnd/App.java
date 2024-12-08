@@ -62,16 +62,16 @@ public class App extends JFrame implements ActionListener, WindowListener {
             lastFrame = System.currentTimeMillis();
             return;
         }
-        if (testTime1 == null || testTime2 == null) {
-            return;
-        }
-        ZonedDateTime skyTime = null;
-        if (System.currentTimeMillis() - test > 5000) {
-            skyTime = testTime2;
-        } else {
-            skyTime = testTime1;
-        }
-//        ZonedDateTime skyTime = SkyClock.getSkyTime();
+//        if (testTime1 == null || testTime2 == null) {
+//            return;
+//        }
+//        ZonedDateTime skyTime = null;
+//        if ((System.currentTimeMillis() - test) % 10000 > 5000) {
+//            skyTime = testTime2;
+//        } else {
+//            skyTime = testTime1;
+//        }
+        ZonedDateTime skyTime = SkyClock.getSkyTime();
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = (float) delta / runtime.getDelay();
 
