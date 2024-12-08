@@ -22,7 +22,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
     private ZonedDateTime testTime1, testTime2;
 
     public App() {
-        super("Wing Watch SNAPSHOT");
+        super("Sky Events");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(SCREEN_SIZE.width/3, SCREEN_SIZE.height/3));
@@ -34,7 +34,6 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
         addWindowListener(this);
         add(eventSchedule, BorderLayout.CENTER);
-        add(new JButton("Test"), BorderLayout.NORTH);
 
         refreshData();
 
@@ -63,16 +62,16 @@ public class App extends JFrame implements ActionListener, WindowListener {
             lastFrame = System.currentTimeMillis();
             return;
         }
-//        if (test1 == null || test2 == null) {
-//            return;
-//        }
-//        ZonedDateTime skyTime = null;
-//        if (System.currentTimeMillis() - test > 5000) {
-//            skyTime = testTime2;
-//        } else {
-//            skyTime = testTime1;
-//        }
-        ZonedDateTime skyTime = SkyClock.getSkyTime();
+        if (testTime1 == null || testTime2 == null) {
+            return;
+        }
+        ZonedDateTime skyTime = null;
+        if (System.currentTimeMillis() - test > 5000) {
+            skyTime = testTime2;
+        } else {
+            skyTime = testTime1;
+        }
+//        ZonedDateTime skyTime = SkyClock.getSkyTime();
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = (float) delta / runtime.getDelay();
 

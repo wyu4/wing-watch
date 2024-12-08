@@ -1,6 +1,7 @@
 package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
+import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,9 +9,9 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class OrderedSchedule extends JPanel {
+public class OrderedSchedule extends JLayeredPane {
     private EventData[] orderedEvents;
-    private final HashMap<EventData, ScheduleComponent> schedule = new HashMap<>();
+    private final HashMap<EventData, EventDisplay> schedule = new HashMap<>();
 
     public OrderedSchedule() {
         setName("OrderedSchedule");
@@ -25,11 +26,11 @@ public class OrderedSchedule extends JPanel {
         }
     }
 
-    private ScheduleComponent getScheduleComponentOf(EventData event) {
+    private EventDisplay getScheduleComponentOf(EventData event) {
         if (schedule.containsKey(event)) {
             return schedule.get(event);
         }
-        return new ScheduleComponent(event);
+        return new EventDisplay(event);
     }
 
     private void sortEvents(ZonedDateTime skyTime) {
@@ -54,10 +55,10 @@ public class OrderedSchedule extends JPanel {
 
     public void step(ZonedDateTime skyTime, float timeMod) {
         sortEvents(skyTime);
-        Component[] componentsToShow = new ScheduleComponent[orderedEvents.length];
+        Component[] componentsToShow = new EventDisplay[orderedEvents.length];
         Component[] componentsShown = getComponents();
         for (int i = 0; i < orderedEvents.length; i++) {
-            ScheduleComponent comp = getScheduleComponentOf(orderedEvents[i]);
+            EventDisplay comp = getScheduleComponentOf(orderedEvents[i]);
             comp.setIndex(i);
             comp.step(skyTime, timeMod);
             componentsToShow[i] = comp;
@@ -68,10 +69,13 @@ public class OrderedSchedule extends JPanel {
                 System.out.println("Removed " + comp);
             }
         }
-        for (Component comp : componentsToShow) {
+        for (int i =0; i < componentsToShow.length; i++) {
+            Component comp = componentsToShow[i];
             if (!Arrays.asList(componentsShown).contains(comp)) {
-                add(comp);
+                add(comp, componentsToShow.length-i, 0);
                 System.out.println("Added " + comp);
+            } else {
+                setLayer(comp, componentsToShow.length-i);
             }
         }
     }
@@ -92,27 +96,19 @@ public class OrderedSchedule extends JPanel {
         return result.append("}").toString();
     }
 }
-class ScheduleComponent extends JPanel {
+class EventDisplay extends JPanel {
+    private final ContentPanel contentPanel = new ContentPanel();
     private final EventData linkedData;
-    private final JPanel contentPanel = new JPanel();
-    private final JLabel indexLabel = new JLabel();
-    private final FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
     private int index = 0;
 
-    public ScheduleComponent(EventData linkedData) {
+    public EventDisplay(EventData linkedData) {
         this.linkedData = linkedData;
 
-        setName("ScheduleComponent-" + linkedData.getName());
+        setName("EventDisplay-" + linkedData.getName());
         setBackground(UIManager.getColor("Schedule.PadColor"));
         setLayout(null);
         setDoubleBuffered(true);
 
-        contentPanel.setBackground(UIManager.getColor("Schedule.ContentBackground"));
-        contentPanel.setLayout(layout);
-        contentPanel.setDoubleBuffered(true);
-
-        contentPanel.add(indexLabel);
-        contentPanel.add(new JProgressBar());
         add(contentPanel);
     }
 
@@ -122,6 +118,10 @@ class ScheduleComponent extends JPanel {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getIndex() {
+       return index;
     }
 
     private void resizeBasedOnParent(Component parent) {
@@ -142,7 +142,7 @@ class ScheduleComponent extends JPanel {
     }
 
     private String formatTimeLeft(int remainingTime) {
-        return String.format("%02d:%02d:%02d:%02d",
+        return String.format("%02d : %02d : %02d : %02d",
                 remainingTime/(60*60*24),
                 remainingTime/(60*60) % 24,
                 remainingTime/(60) % 60,
@@ -155,17 +155,16 @@ class ScheduleComponent extends JPanel {
         if (parent != null) {
             resizeBasedOnParent(parent);
             moveToIndexLocation(parent, timeMod);
+
             contentPanel.setBounds(
                     (int)(App.SCREEN_SIZE.width*0.005)/2,0,
                     getWidth()-((int)(App.SCREEN_SIZE.width*0.005)), getHeight()
             );
-
-            Font currentIndexFont = indexLabel.getFont();
-            indexLabel.setFont(new Font(currentIndexFont.getName(), currentIndexFont.getStyle(), contentPanel.getHeight()/3));
-            if (indexLabel.getPreferredSize().getWidth() > 0) {
-                indexLabel.setPreferredSize(new Dimension(indexLabel.getWidth(), contentPanel.getHeight()));
-            }
-            indexLabel.setText(linkedData.getName()  + " - " + formatTimeLeft(linkedData.getTimeLeft(skyTime)));
+            contentPanel.updateContent(
+                    index,
+                    linkedData.getName(),
+                    formatTimeLeft(linkedData.getTimeLeft(skyTime))
+            );
         }
     }
 
@@ -173,4 +172,51 @@ class ScheduleComponent extends JPanel {
     public String toString() {
         return getName();
     }
+}
+
+class ContentPanel extends JPanel {
+    private final JLabel indexLabel = new JLabel("0", SwingConstants.CENTER);
+    private final JLabel nameLabel = new JLabel("?", SwingConstants.LEFT);
+    private final JLabel timeLabel = new JLabel("00:00:00:00", SwingConstants.RIGHT);
+
+    public ContentPanel() {
+        setName("ContentPanel");
+        putClientProperty(FlatClientProperties.STYLE, "arc: 10; background: $Schedule.ContentBackground;");
+        setDoubleBuffered(true);
+        setLayout(new GridBagLayout());
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 0;
+        constraints.gridx = 1; constraints.gridy = 1;
+        constraints.insets = new Insets(0, (int)(App.SCREEN_SIZE.width*0.005), 0, 0);
+        add(indexLabel, constraints);
+
+        constraints.weightx = 1.0;
+        constraints.gridx = 2; constraints.gridy = 1;
+        add(nameLabel, constraints);
+
+        constraints.weightx = 0;
+        constraints.gridx = 3; constraints.gridy = 1;
+        constraints.insets = new Insets(0, 0, 0, constraints.insets.left);
+        add(timeLabel, constraints);
+    }
+
+    public void updateContent(
+            int index,
+            String eventName,
+            String time
+    ) {
+        int desiredFontSize = (int) (getHeight() * 0.3f);
+
+        indexLabel.setText(String.valueOf(index));
+        indexLabel.setFont(new Font(indexLabel.getFont().getName(), Font.BOLD, desiredFontSize));
+
+        nameLabel.setText(eventName);
+        nameLabel.setFont(new Font(nameLabel.getFont().getName(), nameLabel.getFont().getStyle(), (int) (desiredFontSize * 1.25f)));
+
+        timeLabel.setText(time);
+        timeLabel.setFont(new Font(timeLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.1f)));
+    }
+
 }
