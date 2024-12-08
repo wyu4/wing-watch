@@ -35,15 +35,29 @@ public abstract class SkyClock {
     }
 
     public static final EventData[] WAX_EVENTS = {
-            new EventData(EventData.N_GEYSER, 2*60*60, (5*60) + 11, 10*60),
-            new EventData(EventData.N_GRANDMA, 2*60*60, 35*60 + 20, 10*60),
-            new EventData(EventData.N_TURTLE, 2*60*60, 50*60 + 17, 10*60),
-            new EventData(EventData.N_SKATER, 2*60*60, 60*60, 10*60)
+            new EventData("Polluted Geyser", 2*60*60, (5*60) + 11, 10*60, EventData.TimeType.SKY),
+            new EventData("Grandma's Dinner Event", 2*60*60, 35*60 + 20, 10*60, EventData.TimeType.SKY),
+            new EventData("Sunset Sanctuary Turtle", 2*60*60, 50*60 + 17, 10*60, EventData.TimeType.SKY),
+            new EventData("Dream Skater", 2*60*60, 60*60, 10*60, EventData.TimeType.SKY)
+    };
+
+    public static final EventData[] DAY_CYCLE = {
+            new EventData("Sunrise", 24*60*60, 5*60*60, 0, EventData.TimeType.LOCAL),
+            new EventData("Cloudy (morning)", 24*60*60, 9*60*60, 0, EventData.TimeType.LOCAL),
+            new EventData("Daytime", 24*60*60, 10*60*60, 0, EventData.TimeType.LOCAL),
+            new EventData("Cloudy (noon)", 24*60*60, 16*60*60, 0, EventData.TimeType.LOCAL),
+            new EventData("Sunset", 24*60*60, 17*60*60, 0, EventData.TimeType.LOCAL),
+            new EventData("Nighttime", 24*60*60, 21*60*60, 0, EventData.TimeType.LOCAL)
+    };
+
+    public static final EventData[] QUESTS = {
+            new EventData("Passage Quests", 15*60, 0, 0, EventData.TimeType.SKY),
+            new EventData("Shop Quests", 2*60*60, 35*60 + 20, 10*60, EventData.TimeType.SKY)
     };
 
     public static final EventData[] RESETS = {
-            new EventData(EventData.N_DAILY_RESET, 24*60*60, 0, 1),
-            new EventData(EventData.N_WEEKLY_RESET, DayOfWeek.SUNDAY, 0, 1)
+            new EventData("Daily Reset", 24*60*60, 0, 1, EventData.TimeType.SKY),
+            new EventData("Weekly Reset", DayOfWeek.SUNDAY, 0, 1, EventData.TimeType.SKY)
     };
 
     public static void refreshData() throws IOException, URISyntaxException {

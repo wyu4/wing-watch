@@ -28,7 +28,9 @@ public class App extends JFrame implements ActionListener, WindowListener {
         setSize(getMinimumSize());
 
         tabs.add("Wax", new OrderedSchedule(SkyClock.WAX_EVENTS));
+        tabs.add("Quests", new OrderedSchedule(SkyClock.QUESTS));
         tabs.add("Resets", new OrderedSchedule(SkyClock.RESETS));
+        tabs.add("Day Cycle", new OrderedSchedule(SkyClock.DAY_CYCLE));
 
         addWindowListener(this);
         add(tabs, BorderLayout.CENTER);

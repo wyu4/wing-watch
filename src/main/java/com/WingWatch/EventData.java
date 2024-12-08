@@ -5,37 +5,47 @@ import java.time.ZonedDateTime;
 import java.util.function.Function;
 
 public class EventData {
+    public enum TimeType {
+        SKY, LOCAL
+    }
+
     private final String name;
     private final Function<ZonedDateTime, Long> timeLeft;
     private final long cooldown, duration;
+    private final TimeType timeType;
 
-    public static final String N_GEYSER = "Polluted Geyser";
-    public static final String N_GRANDMA = "Grandma's Dinner Event";
-    public static final String N_TURTLE = "Sunset Sanctuary Turtle";
-    public static final String N_SKATER = "Dream Skater";
-    public static final String N_DAILY_RESET = "Daily";
-    public static final String N_WEEKLY_RESET = "Weekly";
 
     public EventData() {
         name = "Unknown";
         timeLeft = (time) -> 0L;
         cooldown = 0;
         duration = 0;
+        timeType = TimeType.SKY;
     }
 
-    public EventData(String name, long cooldownSeconds, long offsetSeconds, long durationSeconds) {
+    public EventData(String name, long cooldownSeconds, long offsetSeconds, long durationSeconds, TimeType timeType) {
         this.name = name;
+        this.timeType = timeType;
         this.timeLeft =
-                (time) -> (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (offsetSeconds) + (cooldownSeconds))
-                        % (cooldownSeconds);
+                (time) -> {
+                    if (timeType == TimeType.LOCAL) {
+                        time = ZonedDateTime.now();
+                    }
+                    return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (offsetSeconds) + (cooldownSeconds))
+                            % (cooldownSeconds);
+                };
         this.cooldown = cooldownSeconds;
         this.duration = durationSeconds;
     }
 
-    public EventData(String name, DayOfWeek dayOfWeek, long offsetSeconds, long duration) {
+    public EventData(String name, DayOfWeek dayOfWeek, long offsetSeconds, long duration, TimeType timeType) {
         this.name = name;
+        this.timeType = timeType;
         this.timeLeft =
                 (time) -> {
+                    if (timeType == TimeType.LOCAL) {
+                        time = ZonedDateTime.now();
+                    }
                     long timeElapsed = (time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + ((long) time.getDayOfWeek().getValue() *24*60*60));
                     long event = (((long) dayOfWeek.getValue()*24*60*60) + offsetSeconds);
                     long modResult = (event-timeElapsed)%(7*24*60*60);
@@ -56,6 +66,10 @@ public class EventData {
 
     public boolean active(ZonedDateTime skyTime) {
         return (cooldown - getTimeLeft(skyTime)) <= duration;
+    }
+
+    public TimeType getTimeType() {
+        return timeType;
     }
 
     public float percentElapsed(ZonedDateTime skyTime) {
