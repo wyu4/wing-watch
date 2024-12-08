@@ -13,7 +13,6 @@ public class App extends JFrame implements ActionListener, WindowListener {
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
-    private final OrderedSchedule waxSchedule = new OrderedSchedule(), passageSchedule = new OrderedSchedule();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
 
     private Long lastFrame = null, test = System.currentTimeMillis();
@@ -28,13 +27,8 @@ public class App extends JFrame implements ActionListener, WindowListener {
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
 
-//        tabs.setLayout(new GridLayout(1, 1));
-
-        waxSchedule.trackEvents(SkyClock.WAX_EVENTS);
-        passageSchedule.trackEvents(SkyClock.WAX_EVENTS);
-
-        tabs.add("Wax", waxSchedule);
-        tabs.add("Passage Quests", passageSchedule);
+        tabs.add("Wax", new OrderedSchedule(SkyClock.WAX_EVENTS));
+        tabs.add("Resets", new OrderedSchedule(SkyClock.RESETS));
 
         addWindowListener(this);
         add(tabs, BorderLayout.CENTER);

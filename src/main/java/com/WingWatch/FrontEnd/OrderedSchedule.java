@@ -26,7 +26,7 @@ public class OrderedSchedule extends JScrollPane {
         }
     }
 
-    public OrderedSchedule() {
+    public OrderedSchedule(EventData[] events) {
         setName("OrderedSchedule");
         setDoubleBuffered(true);
         setBorder(null);
@@ -44,6 +44,8 @@ public class OrderedSchedule extends JScrollPane {
         setViewport(viewport);
 
         SCHEDULES.add(this);
+
+        trackEvents(events);
     }
 
     public void trackEvents(EventData[] events) {

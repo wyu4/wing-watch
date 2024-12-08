@@ -2,6 +2,7 @@ package com.WingWatch;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.DayOfWeek;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -38,6 +39,11 @@ public abstract class SkyClock {
             new EventData(EventData.N_GRANDMA, 2*60*60, 35*60 + 20, 10*60),
             new EventData(EventData.N_TURTLE, 2*60*60, 50*60 + 17, 10*60),
             new EventData(EventData.N_SKATER, 2*60*60, 60*60, 10*60)
+    };
+
+    public static final EventData[] RESETS = {
+            new EventData(EventData.N_DAILY_RESET, 24*60*60, 0, 1),
+            new EventData(EventData.N_WEEKLY_RESET, DayOfWeek.SUNDAY, 0, 1)
     };
 
     public static void refreshData() throws IOException, URISyntaxException {
