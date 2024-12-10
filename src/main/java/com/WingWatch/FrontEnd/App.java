@@ -1,17 +1,26 @@
 package com.WingWatch.FrontEnd;
 
-import com.WingWatch.EventData;
 import com.WingWatch.SkyClock;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import javax.swing.Timer;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App extends JFrame implements ActionListener, WindowListener {
-    public static boolean SESSION_OPEN = false;
+    private static List<App> SESSIONS = new ArrayList<>();
 
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
@@ -44,8 +53,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         setVisible(true);
         revalidate();
 
-        SESSION_OPEN = true;
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        SESSIONS.add(this);
     }
 
     private void refreshData() {
@@ -69,6 +77,10 @@ public class App extends JFrame implements ActionListener, WindowListener {
             lastFrame = System.currentTimeMillis();
             return;
         }
+        if (!SESSIONS.getFirst().equals(this)) {
+            System.err.println("Only one session at a time.");
+            closeFrame();
+        }
         ZonedDateTime skyTime = SkyClock.getSkyTime();
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = (float) delta / runtime.getDelay();
@@ -87,14 +99,16 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
     @Override
     public void windowClosing(WindowEvent e) {
-        if (getDefaultCloseOperation() == EXIT_ON_CLOSE) {
-            SESSION_OPEN = false;
-        }
+        SESSIONS.remove(this);
         runtime.stop();
     }
 
     @Override
-    public void windowClosed(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {
+        if (SESSIONS.isEmpty()) {
+            System.exit(0);
+        }
+    }
 
     @Override
     public void windowIconified(WindowEvent e) {
@@ -112,4 +126,8 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
     @Override
     public void windowDeactivated(WindowEvent e) {}
+
+    private void closeFrame() {
+        dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }
 }

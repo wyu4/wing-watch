@@ -103,7 +103,6 @@ public class OrderedSchedule extends JScrollPane {
             componentsToShow[i] = comp;
             if (!Arrays.asList(componentsShown).contains(comp)) {
                 contentPane.add(comp, componentsToShow.length-i, 0);
-                System.out.println("Added " + comp);
             } else {
                 contentPane.setLayer(comp, componentsToShow.length-i);
             }
@@ -114,7 +113,6 @@ public class OrderedSchedule extends JScrollPane {
         for (Component comp : componentsShown) {
             if (!Arrays.asList(componentsToShow).contains(comp)) {
                 contentPane.remove(comp);
-                System.out.println("Removed " + comp);
             }
         }
 
