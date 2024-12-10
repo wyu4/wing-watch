@@ -42,12 +42,13 @@ public abstract class SkyClock {
     };
 
     public static final EventData[] DAY_CYCLE = {
-            new EventData("Sunrise", 24*60*60, 5*60*60, 0, EventData.TimeType.LOCAL),
-            new EventData("Cloudy (morning)", 24*60*60, 9*60*60, 0, EventData.TimeType.LOCAL),
-            new EventData("Daytime", 24*60*60, 10*60*60, 0, EventData.TimeType.LOCAL),
-            new EventData("Cloudy (noon)", 24*60*60, 16*60*60, 0, EventData.TimeType.LOCAL),
-            new EventData("Sunset", 24*60*60, 17*60*60, 0, EventData.TimeType.LOCAL),
-            new EventData("Nighttime", 24*60*60, 21*60*60, 0, EventData.TimeType.LOCAL)
+//            new EventData("Nighttime", 24*60*60, 0, 5*60*60, EventData.TimeType.LOCAL),
+            new EventData("Sunrise", 24*60*60, 5*60*60, 4*60*60, EventData.TimeType.LOCAL),
+            new EventData("Cloudy (morning)", 24*60*60, 9*60*60, 60*60, EventData.TimeType.LOCAL),
+            new EventData("Daytime", 24*60*60, 10*60*60, 6*60*60, EventData.TimeType.LOCAL),
+            new EventData("Cloudy (noon)", 24*60*60, 16*60*60, 60*60, EventData.TimeType.LOCAL),
+            new EventData("Sunset", 24*60*60, 17*60*60, 4*60*60, EventData.TimeType.LOCAL),
+            new EventData("Nighttime", 24*60*60, 21*60*60, 8*60*60, EventData.TimeType.LOCAL)
     };
 
     public static final EventData[] QUESTS = {

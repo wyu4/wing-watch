@@ -1,5 +1,6 @@
 package com.WingWatch.FrontEnd;
 
+import com.WingWatch.EventData;
 import com.WingWatch.SkyClock;
 
 import javax.swing.*;
@@ -10,19 +11,21 @@ import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 
 public class App extends JFrame implements ActionListener, WindowListener {
+    public static boolean SESSION_OPEN = false;
+
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
 
-    private Long lastFrame = null, test = System.currentTimeMillis();
+    private Long lastFrame = null;
     private ZonedDateTime testTime1, testTime2;
 
     public App() {
         super("Sky Events");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2.5f), SCREEN_SIZE.height/3));
+        setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2f), SCREEN_SIZE.height/3));
         setMaximumSize(SCREEN_SIZE);
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
@@ -40,6 +43,9 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
         setVisible(true);
         revalidate();
+
+        SESSION_OPEN = true;
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     private void refreshData() {
@@ -63,15 +69,6 @@ public class App extends JFrame implements ActionListener, WindowListener {
             lastFrame = System.currentTimeMillis();
             return;
         }
-//        if (testTime1 == null || testTime2 == null) {
-//            return;
-//        }
-//        ZonedDateTime skyTime = null;
-//        if ((System.currentTimeMillis() - test) % 10000 > 5000) {
-//            skyTime = testTime2;
-//        } else {
-//            skyTime = testTime1;
-//        }
         ZonedDateTime skyTime = SkyClock.getSkyTime();
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = (float) delta / runtime.getDelay();
@@ -90,6 +87,9 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
     @Override
     public void windowClosing(WindowEvent e) {
+        if (getDefaultCloseOperation() == EXIT_ON_CLOSE) {
+            SESSION_OPEN = false;
+        }
         runtime.stop();
     }
 

@@ -3,6 +3,7 @@ package com.WingWatch.FrontEnd;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.time.LocalDateTime;
@@ -16,6 +17,9 @@ public class GlobalClockDisplay extends JPanel {
         setName("GlobalClock");
         setDoubleBuffered(true);
         setLayout(new GridLayout(2, 2));
+
+        skyLabel.setDoubleBuffered(true);
+        localLabel.setDoubleBuffered(true);
 
         add(skyTitle);add(localTitle);
         add(skyLabel);add(localLabel);

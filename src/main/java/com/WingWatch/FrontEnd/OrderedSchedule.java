@@ -37,6 +37,7 @@ public class OrderedSchedule extends JScrollPane {
         viewport.setBackground(new Color(0, 0, 0, 0));
         viewport.setBorder(null);
         viewport.setLayout(null);
+        viewport.setDoubleBuffered(true);
 
         contentPane.setDoubleBuffered(true);
         contentPane.setBackground(new Color(0, 0, 0, 0));
@@ -69,7 +70,7 @@ public class OrderedSchedule extends JScrollPane {
         for (int i = 0; i < n; i++) {
             boolean sorted = true;
             for (int j = 0; j < n - i; j++) {
-                if (orderedEvents[j].getTimeLeft(skyTime) > orderedEvents[j + 1].getTimeLeft(skyTime)) {
+                if (getSortValue(skyTime, orderedEvents[j]) > getSortValue(skyTime, orderedEvents[j+1])) {
                     temp = orderedEvents[j];
                     orderedEvents[j] = orderedEvents[j + 1];
                     orderedEvents[j + 1] = temp;
@@ -80,6 +81,10 @@ public class OrderedSchedule extends JScrollPane {
                 break;
             };
         }
+    }
+
+    private double getSortValue(ZonedDateTime skyTime, EventData event) {
+        return event.active(skyTime) ? -event.percentElapsed(skyTime) : event.getTimeLeft(skyTime);
     }
 
     public void step(ZonedDateTime skyTime, float timeMod) {
@@ -96,6 +101,12 @@ public class OrderedSchedule extends JScrollPane {
             comp.setIndex(i);
             comp.step(skyTime, timeMod);
             componentsToShow[i] = comp;
+            if (!Arrays.asList(componentsShown).contains(comp)) {
+                contentPane.add(comp, componentsToShow.length-i, 0);
+                System.out.println("Added " + comp);
+            } else {
+                contentPane.setLayer(comp, componentsToShow.length-i);
+            }
             if (i == orderedEvents.length-1) {
                 lastDisplay = comp;
             }
@@ -104,15 +115,6 @@ public class OrderedSchedule extends JScrollPane {
             if (!Arrays.asList(componentsToShow).contains(comp)) {
                 contentPane.remove(comp);
                 System.out.println("Removed " + comp);
-            }
-        }
-        for (int i =0; i < componentsToShow.length; i++) {
-            Component comp = componentsToShow[i];
-            if (!Arrays.asList(componentsShown).contains(comp)) {
-                contentPane.add(comp, componentsToShow.length-i, 0);
-                System.out.println("Added " + comp);
-            } else {
-                contentPane.setLayer(comp, componentsToShow.length-i);
             }
         }
 
@@ -199,7 +201,7 @@ class EventDisplay extends JPanel {
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClock.formatTimeLeft(linkedData.getTimeLeft(skyTime)),
+                SkyClock.formatTimeLeft(linkedData.active(skyTime) ? linkedData.durationLeft(skyTime) : linkedData.getTimeLeft(skyTime)),
                 linkedData.active(skyTime),
                 linkedData.percentElapsed(skyTime)
         );
@@ -215,6 +217,7 @@ class ContentPanel extends JPanel {
     private final JLabel indexLabel = new JLabel("0", SwingConstants.CENTER);
     private final JLabel nameLabel = new JLabel("?", SwingConstants.LEFT);
     private final JLabel timeLabel = new JLabel("00:00:00:00", SwingConstants.RIGHT);
+    private final JLabel activeLabel = new JLabel("?", SwingConstants.RIGHT);
     private final JProgressBar progress = new JProgressBar();
 
     public ContentPanel() {
@@ -222,6 +225,12 @@ class ContentPanel extends JPanel {
         putClientProperty(FlatClientProperties.STYLE, "arc: 10; background: $Schedule.ContentBackground;");
         setDoubleBuffered(true);
         setLayout(new GridBagLayout());
+
+        indexLabel.setDoubleBuffered(true);
+        nameLabel.setDoubleBuffered(true);
+        timeLabel.setDoubleBuffered(true);
+        progress.setDoubleBuffered(true);
+        activeLabel.setDoubleBuffered(true);
 
         progress.setMinimum(0);
         progress.setMaximum(1000);
@@ -239,9 +248,13 @@ class ContentPanel extends JPanel {
 
         constraints.weightx = 0;
         constraints.gridx = 3; constraints.gridy = 1;
+        add(activeLabel, constraints);
+
+        constraints.weightx = 0;
+        constraints.gridx = 4; constraints.gridy = 1;
         add(timeLabel, constraints);
 
-        constraints.gridx = 4; constraints.gridy = 1;
+        constraints.gridx = 5; constraints.gridy = 1;
         constraints.insets = new Insets(0, constraints.insets.left, 0, constraints.insets.left);
         add(progress, constraints);
     }
@@ -261,12 +274,18 @@ class ContentPanel extends JPanel {
         nameLabel.setText(eventName);
         nameLabel.setFont(new Font(nameLabel.getFont().getName(), nameLabel.getFont().getStyle(), (int) (desiredFontSize * 1.25f)));
 
-        timeLabel.setText(time);
         timeLabel.setFont(new Font(timeLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.1f)));
+        timeLabel.setText(time);
+
+        activeLabel.setFont(new Font(nameLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.2f)));
 
         if (active) {
+            activeLabel.setText("Ending in: ");
+            activeLabel.setForeground(new Color(180, 255, 180));
             progress.setForeground(new Color(0, 255, 0));
         } else {
+            activeLabel.setText("Next in: ");
+            activeLabel.setForeground(new Color(255, 255, 255));
             progress.setForeground(new Color(47, 69, 89));
         }
         progress.setValue((int)(progress.getMaximum()*percent));

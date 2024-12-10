@@ -14,7 +14,6 @@ public class EventData {
     private final long cooldown, duration;
     private final TimeType timeType;
 
-
     public EventData() {
         name = "Unknown";
         timeLeft = (time) -> 0L;
@@ -31,7 +30,7 @@ public class EventData {
                     if (timeType == TimeType.LOCAL) {
                         time = ZonedDateTime.now();
                     }
-                    return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60)) - (offsetSeconds) + (cooldownSeconds))
+                    return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
                             % (cooldownSeconds);
                 };
         this.cooldown = cooldownSeconds;
@@ -68,16 +67,19 @@ public class EventData {
         return (cooldown - getTimeLeft(skyTime)) <= duration;
     }
 
-    public TimeType getTimeType() {
-        return timeType;
-    }
-
     public float percentElapsed(ZonedDateTime skyTime) {
         if (active(skyTime)) {
             return Math.clamp(1f - ((float) (cooldown - getTimeLeft(skyTime)) / duration), 0, 1f);
         } else {
             return Math.clamp(((float) ((cooldown - duration) - getTimeLeft(skyTime)) / (cooldown - duration)), 0, 1f);
         }
+    }
+
+    public long durationLeft(ZonedDateTime skyTime) {
+        if (active(skyTime)) {
+            return Math.clamp(duration-(cooldown - getTimeLeft(skyTime)), 0, duration);
+        }
+        return 0;
     }
 
     @Override
