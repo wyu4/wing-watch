@@ -21,8 +21,12 @@ import java.util.List;
 
 public class App extends JFrame implements ActionListener, WindowListener {
     private static List<App> SESSIONS = new ArrayList<>();
-
+//    public static final Dimension SCREEN_SIZE = new Dimension(
+//            (int)(Toolkit.getDefaultToolkit().getScreenSize().width*0.9f),
+//            (int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.9f)
+//    );
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
