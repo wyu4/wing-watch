@@ -1,6 +1,8 @@
 package com.WingWatch.FrontEnd;
 
+import com.WingWatch.EventData;
 import com.WingWatch.SkyClock;
+import com.WingWatch.TravelingSpirit;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -45,6 +47,8 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
         tabs.add("Wax", new OrderedSchedule(SkyClock.WAX_EVENTS));
         tabs.add("Quests", new OrderedSchedule(SkyClock.QUESTS));
+        tabs.add("Concerts & Shows", new OrderedSchedule(SkyClock.CONCERTS_SHOWS));
+        tabs.add("Spirits", new OrderedSchedule(new EventData[] {TravelingSpirit.createData()}));
         tabs.add("Resets", new OrderedSchedule(SkyClock.RESETS));
         tabs.add("Day Cycle", new OrderedSchedule(SkyClock.DAY_CYCLE));
 
@@ -52,24 +56,10 @@ public class App extends JFrame implements ActionListener, WindowListener {
         add(tabs, BorderLayout.CENTER);
         add(globalClockDisplay, BorderLayout.NORTH);
 
-        refreshData();
-
         setVisible(true);
         revalidate();
 
         SESSIONS.add(this);
-    }
-
-    private void refreshData() {
-        EventQueue.invokeLater(() -> {
-            try {
-                SkyClock.refreshData();
-                testTime1 = ZonedDateTime.of(2024, 12, 7, 0, 5, 0, 0, SkyClock.getSkyTime().getZone());
-                testTime2 = ZonedDateTime.of(2024, 12, 7, 3, 5, 0, 0, SkyClock.getSkyTime().getZone());
-            } catch (IOException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 
     @Override
@@ -86,8 +76,9 @@ public class App extends JFrame implements ActionListener, WindowListener {
             closeFrame();
         }
         ZonedDateTime skyTime = SkyClock.getSkyTime();
+//        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 15, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;
-        float timeMod = (float) delta / runtime.getDelay();
+        float timeMod = ((float) delta) / runtime.getDelay();
 
         OrderedSchedule.stepAll(skyTime, timeMod);
         globalClockDisplay.step(skyTime);

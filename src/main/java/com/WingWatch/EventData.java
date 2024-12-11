@@ -1,6 +1,14 @@
 package com.WingWatch;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -38,7 +46,7 @@ public class EventData {
                     return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
                             % (cooldownSeconds);
                 };
-        this.cooldown = cooldownSeconds;
+        this.cooldown = Math.max(cooldownSeconds, 1);
         this.duration = Math.max(durationSeconds, 10);
     }
 
@@ -59,6 +67,7 @@ public class EventData {
                         time = ZonedDateTime.now();
                     }
 
+                    // Stole this from chatgpt (with a couple of tweaks), I'm way too dumb to code this
                     // Convert ZonedDateTime to day of week (1 = Monday, ..., 7 = Sunday)
                     int currentDay = time.getDayOfWeek().getValue();
                     long secondsSinceMidnight = time.getSecond() + (time.getHour() * 60*60);
@@ -91,51 +100,35 @@ public class EventData {
 
                     // If no more events this week, wrap to the first day of the next week
                     return secondsUntilMidnight + (long) ((7 - currentDay + onDays.getFirst()) - 1) * 24 * 60 * 60 + offsetSeconds;
-
-//                    int today = time.getDayOfWeek().getValue();
-//                    Integer nextEventDay = getNextEventDay(onDays, today);
-//
-//                    int daysRemaining;
-//                    if (today <= nextEventDay) {
-//                        daysRemaining = nextEventDay - today;
-//                    } else {
-//                        daysRemaining = 7 - (today - nextEventDay);
-//                    }
-//
-//                    long daysRemainingInSeconds = ((long) daysRemaining *24*60*60);
-//                    this.cooldown = ((long) daysRemaining *24*60*60) + cooldownSeconds;
-//
-//                    return getNextDailyOccurrence(time, this.cooldown, offsetSeconds);
                 };
         this.cooldown = cooldownSeconds;
-        this.duration = durationSeconds;
+        this.duration = Math.max(durationSeconds, 10);
     }
 
-//    private static Integer getNextEventDay(ArrayList<Integer> onDays, int today) {
-//        Integer nextEventDay = onDays.getLast();
-//        if (today > nextEventDay) {
-//            nextEventDay = onDays.getFirst();
-//        } else {
-//            for (Integer day : onDays) {
-//                if (today > day) {
-//                    continue;
-//                }
-//                if (day - today <= nextEventDay - today) {
-//                    nextEventDay = day;
-//                }
-//            }
-//        }
-//        return nextEventDay;
-//    }
+    public EventData(String name, ZonedDateTime start, ZonedDateTime end) {
+        this.name = name;
+        this.timeType = TimeType.SKY;
+        this.timeLeft = (time) -> {
+
+            if (Duration.between(time, start).isNegative() && Duration.between(time, end).isPositive()) {
+                this.duration = Duration.between(start, end).getSeconds();
+                this.cooldown = Duration.between(start, start.plusYears(1)).getSeconds();
+                return Duration.between(time, start.plusYears(1)).getSeconds();
+            } else {
+                this.duration = 0L;
+                this.cooldown = 1L;
+                return 0L;
+            }
+        };
+        this.cooldown = 0;
+        this.duration = 10;
+    }
 
     public String getName() {
         return name;
     }
 
     public long getTimeLeft(ZonedDateTime skyTime) {
-//        if (name.equals("Weekly Reset")) {
-//            System.out.println(SkyClock.formatTimeLeft(cooldown) + "   -   " + SkyClock.formatTimeLeft(timeLeft.apply(skyTime)));
-//        }
         return timeLeft.apply(skyTime);
     }
 

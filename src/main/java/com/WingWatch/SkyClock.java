@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 public abstract class SkyClock {
     private static final String REGION_URL = "https://raw.githubusercontent.com/cmstead/sky-clock/refs/heads/main/src/date-tools/regional-time.js";
-    private static final ZoneId CENTRAL = ZoneId.of("Etc/UTC");
 
     private static final Pattern CONST_VAR_PATTERN = Pattern.compile("const\\s+(\\w+)\\s*= '\\s*(.+?)';");
 
@@ -46,23 +45,27 @@ public abstract class SkyClock {
 
     public static final EventData[] DAY_CYCLE = {
 //            new EventData("Nighttime", 24*60*60, 0, 5*60*60, EventData.TimeType.LOCAL),
-            new EventData("Nest Sunset", 60*60, 40*60, 10*60, EventData.TimeType.SKY),
-            new EventData("Sunrise", 24*60*60, 5*60*60, 4*60*60, EventData.TimeType.LOCAL),
-            new EventData("Cloudy", 24*60*60, 9*60*60, 60*60, EventData.TimeType.LOCAL),
-            new EventData("Daytime", 24*60*60, 10*60*60, 6*60*60, EventData.TimeType.LOCAL),
-            new EventData("Cloudy", 24*60*60, 16*60*60, 60*60, EventData.TimeType.LOCAL),
-            new EventData("Sunset", 24*60*60, 17*60*60, 4*60*60, EventData.TimeType.LOCAL),
-            new EventData("Nighttime", 24*60*60, 21*60*60, 8*60*60, EventData.TimeType.LOCAL)
+            new EventData("Nest Sunset", 60*60, 40*60, (10*60) + 20, EventData.TimeType.SKY),
+            new EventData("Home Sunrise", 24*60*60, 5*60*60, 4*60*60, EventData.TimeType.LOCAL),
+            new EventData("Home Cloudy", 24*60*60, 9*60*60, 60*60, EventData.TimeType.LOCAL),
+            new EventData("Home Daytime", 24*60*60, 10*60*60, 6*60*60, EventData.TimeType.LOCAL),
+            new EventData("Home Cloudy", 24*60*60, 16*60*60, 60*60, EventData.TimeType.LOCAL),
+            new EventData("Home Sunset", 24*60*60, 17*60*60, 4*60*60, EventData.TimeType.LOCAL),
+            new EventData("Home Nighttime", 24*60*60, 21*60*60, 8*60*60, EventData.TimeType.LOCAL)
     };
 
     public static final EventData[] QUESTS = {
             new EventData("Daily Quests", 24*60*60, 0, 24*60*60, EventData.TimeType.SKY),
-            new EventData("Passage Quest Reset", 15*60, 0, 0, EventData.TimeType.SKY),
+    };
+
+    public static final EventData[] CONCERTS_SHOWS = {
+            new EventData("Aurora", 4*60*60, (2*60*60)+(10*60), 50*60, EventData.TimeType.SKY)
     };
 
     public static final EventData[] RESETS = {
             new EventData("Daily Reset", 24*60*60, 0, 0, EventData.TimeType.SKY),
-            new EventData("Weekly Reset", new Integer[] {7}, 24*60*60, 0, 0, EventData.TimeType.SKY)
+            new EventData("Weekly Reset", new Integer[] {7}, 24*60*60, 0, 0, EventData.TimeType.SKY),
+            new EventData("Passage Quest Reset", 15*60, 0, 0, EventData.TimeType.SKY),
     };
 
     public static void refreshData() throws IOException, URISyntaxException {
@@ -78,9 +81,11 @@ public abstract class SkyClock {
         );
     }
 
+    private static ZoneId getSkyZone() {
+        return ZoneId.of(REGION_DATA.get(US_PACIFIC_TIME_ZONE));
+    }
+
     public static ZonedDateTime getSkyTime() {
-        return ZonedDateTime.now(
-                ZoneId.of(REGION_DATA.get(US_PACIFIC_TIME_ZONE))
-        );
+        return ZonedDateTime.now(getSkyZone());
     }
 }

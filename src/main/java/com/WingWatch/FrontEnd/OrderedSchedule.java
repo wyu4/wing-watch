@@ -170,7 +170,7 @@ class EventDisplay extends JPanel {
         return (index * getHeight()) + ((index + 1) * (int)(App.SCREEN_SIZE.width*0.005)/2);
     }
 
-    private void moveToIndexLocation(Component parent, float timeMod) {
+    private void moveToIndexLocation(float timeMod) {
         int desiredY = calcDesiredY();
         double increment = App.SCREEN_SIZE.height*0.0003*timeMod;
 
@@ -190,7 +190,7 @@ class EventDisplay extends JPanel {
         }
 
         resizeBasedOnParent(container);
-        moveToIndexLocation(container, timeMod);
+        moveToIndexLocation(timeMod);
 
         contentPanel.setBounds(
                 (int)(App.SCREEN_SIZE.width*0.005)/2,0,

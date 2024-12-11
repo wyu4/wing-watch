@@ -27,50 +27,67 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>.settings/**</exclude>
-                                        <exclude>*.classpath</exclude>
-                                        <exclude>*.project</exclude>
-                                        <exclude>*.txt</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <outputFile>target/${project.artifactId}-${project.version}-shaded.jar</outputFile>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.WingWatch.Start</mainClass>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>com.akathist.maven.plugins.launch4j</groupId>-->
-<!--                <artifactId>launch4j-maven-plugin</artifactId>-->
-<!--                <version>2.5.2</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>launch4j</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <jar>${project.build.directory}/${project.build.finalName}-shaded.jar</jar>-->
-<!--                            <dontWrapJar>false</dontWrapJar>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <outfile>target/WingWatch.exe</outfile>
+                            <jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
+                            <!-- if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> -->
+                            <dontWrapJar>false</dontWrapJar>
+                            <errTitle>Error in launch4j plugin</errTitle>
+                            <classPath>
+                                <mainClass>com.WingWatch.Start</mainClass>
+                            </classPath>
+<!--                            <icon>Project.ico</icon>-->
+                            <jre>
+                                <minVersion>21</minVersion>
+<!--                                <maxVersion>21</maxVersion>-->
+                                <initialHeapSize>512</initialHeapSize>
+                                <maxHeapSize>1024</maxHeapSize>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>1.0.0.0</txtFileVersion>
+                                <fileDescription>Track Sky events!</fileDescription>
+                                <copyright>None</copyright>
+                                <companyName>Wallibe</companyName>
+                                <productVersion>0.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <productName>SKyEvents</productName>
+                                <internalName>WingWatch</internalName>
+                                <originalFilename>WingWatch.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -92,6 +109,11 @@
             <artifactId>flatlaf-intellij-themes</artifactId>
             <version>3.5</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.eikek</groupId>
+            <artifactId>emil-jsoup_2.12</artifactId>
+            <version>0.17.0</version>
         </dependency>
     </dependencies>
 </project>
