@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.time.DayOfWeek;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +90,6 @@ public abstract class SkyClock {
     }
 
     public static ZonedDateTime getSkyTime() {
-        return ZonedDateTime.now(getSkyZone());
+        return ZonedDateTime.now(getSkyZone()).truncatedTo(ChronoUnit.SECONDS);
     }
 }

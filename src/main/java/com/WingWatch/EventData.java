@@ -1,20 +1,12 @@
 package com.WingWatch;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class EventData {
@@ -66,40 +58,66 @@ public class EventData {
                     if (timeType == TimeType.LOCAL) {
                         time = ZonedDateTime.now();
                     }
-
-                    // Stole this from chatgpt (with a couple of tweaks), I'm way too dumb to code this
-                    // Convert ZonedDateTime to day of week (1 = Monday, ..., 7 = Sunday)
-                    int currentDay = time.getDayOfWeek().getValue();
-                    long secondsSinceMidnight = time.getSecond() + (time.getHour() * 60*60);
-                    long secondsUntilMidnight = 24 * 60 * 60 - secondsSinceMidnight;
-
-                    // Check for events on the current day
+                    Integer currentDay = time.getDayOfWeek().getValue();
                     if (onDays.contains(currentDay)) {
-                        if (onDays.getFirst() == currentDay) {
-                            this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
+                        this.cooldown = cooldownSeconds;
+                    } else {
+                        Integer lastDay = onDays.getLast();
+                        Integer nextDay = onDays.getFirst();
+                        for (Integer day : onDays) {
+                            if (day > currentDay) {
+                                nextDay = day;
+                                break;
+                            }
+                        }
+                        lastDay = onDays.get((onDays.indexOf(nextDay) - 1 + onDays.size()) % onDays.size());
+                        if (Objects.equals(lastDay, nextDay)) {
+                            this.cooldown = 7*24*60*60;
                         } else {
-                            this.cooldown = cooldownSeconds;
+                            this.cooldown = (long) ((lastDay > nextDay ? nextDay : nextDay - lastDay) + 1 % 7) * 24 * 60 * 60;
                         }
 
-                        long elapsedSinceOffset = Math.max(0, secondsSinceMidnight - offsetSeconds);
-
-                        long nextEventToday = secondsSinceMidnight + cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
-
-                        if (nextEventToday < 24 * 60 * 60) { // If event still falls on the same day
-                            return cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
-                        }
+                        return Duration.between(time, time.plusDays((nextDay - currentDay + 7) % 7).truncatedTo(ChronoUnit.DAYS)).getSeconds() + offsetSeconds;
                     }
+                    return (this.cooldown) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (this.cooldown))
+                            % (this.cooldown);
 
-                    // Find the next available day
-                    this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
-                    for (int day : onDays) {
-                        if (day > currentDay) {
-                            return secondsUntilMidnight + (long) ((day - currentDay) - 1) * 24 * 60 * 60 + offsetSeconds;
-                        }
-                    }
-
-                    // If no more events this week, wrap to the first day of the next week
-                    return secondsUntilMidnight + (long) ((7 - currentDay + onDays.getFirst()) - 1) * 24 * 60 * 60 + offsetSeconds;
+//                    // Stole this from chatgpt (with a couple of tweaks), I'm way too dumb to code this
+//                    // Convert ZonedDateTime to day of week (1 = Monday, ..., 7 = Sunday)
+//                    int currentDay = time.getDayOfWeek().getValue();
+//                    long secondsSinceMidnight = time.getSecond() + (time.getHour() * 60*60);
+//                    long secondsUntilMidnight = 24 * 60 * 60 - secondsSinceMidnight;
+//
+//                    // Check for events on the current day
+//                    if (onDays.contains(currentDay)) {
+////                        if (onDays.getFirst() == currentDay) {
+////                            this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
+////                            System.out.println("Long");
+////                        } else {
+////                            this.cooldown = cooldownSeconds;
+////                            System.out.println("Short");
+////                        }
+//                        this.cooldown = cooldownSeconds;
+//
+//                        long elapsedSinceOffset = Math.max(0, secondsSinceMidnight - offsetSeconds);
+//
+//                        long nextEventToday = secondsSinceMidnight + cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
+//
+//                        if (nextEventToday < 24 * 60 * 60) { // If event still falls on the same day
+//                            return cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
+//                        }
+//                    }
+//
+//                    // Find the next available day
+//                    this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
+//                    for (int day : onDays) {
+//                        if (day > currentDay) {
+//                            return secondsUntilMidnight + (long) ((day - currentDay) - 1) * 24 * 60 * 60 + offsetSeconds;
+//                        }
+//                    }
+//
+//                    // If no more events this week, wrap to the first day of the next week
+//                    return secondsUntilMidnight + (long) ((7 - currentDay + onDays.getFirst()) - 1) * 24 * 60 * 60 + offsetSeconds;
                 };
         this.cooldown = cooldownSeconds;
         this.duration = Math.max(durationSeconds, 10);
@@ -141,7 +159,8 @@ public class EventData {
         if (timeLeft == null) {
             return false;
         }
-        return (cooldown - getTimeLeft(skyTime)) <= duration;
+//        return false;
+        return (cooldown - timeLeft) <= duration;
     }
 
     public float percentElapsed(ZonedDateTime skyTime) {
