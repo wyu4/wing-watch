@@ -20,9 +20,9 @@ public class OrderedSchedule extends JScrollPane {
     private final JLayeredPane contentPane = new JLayeredPane();
     private EventData[] orderedEvents;
 
-    public static void stepAll(ZonedDateTime skyTime, float timeMod) {
+    public static void stepAll(ZonedDateTime[] times, float timeMod) {
         for (OrderedSchedule schedule : SCHEDULES) {
-            schedule.step(skyTime, timeMod);
+            schedule.step(times, timeMod);
         }
     }
 
@@ -63,14 +63,14 @@ public class OrderedSchedule extends JScrollPane {
         return new EventDisplay(event);
     }
 
-    private void sortEvents(ZonedDateTime skyTime) {
+    private void sortEvents(ZonedDateTime[] times) {
         // Bubble Sort cuz why not
         final int n = orderedEvents.length-1;
         EventData temp;
         for (int i = 0; i < n; i++) {
             boolean sorted = true;
             for (int j = 0; j < n - i; j++) {
-                if (getSortValue(skyTime, orderedEvents[j]) > getSortValue(skyTime, orderedEvents[j+1])) {
+                if (getSortValue(times, orderedEvents[j]) > getSortValue(times, orderedEvents[j+1])) {
                     temp = orderedEvents[j];
                     orderedEvents[j] = orderedEvents[j + 1];
                     orderedEvents[j + 1] = temp;
@@ -83,27 +83,27 @@ public class OrderedSchedule extends JScrollPane {
         }
     }
 
-    private double getSortValue(ZonedDateTime skyTime, EventData event) {
-        Long timeLeft = event.getTimeLeft(skyTime);
+    private double getSortValue(ZonedDateTime[] times, EventData event) {
+        Long timeLeft = event.getTimeLeft(times);
         if (timeLeft == null) {
             return orderedEvents.length;
         }
-        return event.active(skyTime) ? -event.percentElapsed(skyTime) : event.getTimeLeft(skyTime);
+        return event.active(times) ? -event.percentElapsed(times) : event.getTimeLeft(times);
     }
 
-    public void step(ZonedDateTime skyTime, float timeMod) {
+    public void step(ZonedDateTime[] times, float timeMod) {
         if (getParent() == null || !isVisible()) {
             return;
         }
 
-        sortEvents(skyTime);
+        sortEvents(times);
         Component[] componentsToShow = new EventDisplay[orderedEvents.length];
         Component[] componentsShown = contentPane.getComponents();
         EventDisplay lastDisplay = null;
         for (int i = 0; i < orderedEvents.length; i++) {
             EventDisplay comp = getScheduleComponentOf(orderedEvents[i]);
             comp.setIndex(i);
-            comp.step(skyTime, timeMod);
+            comp.step(times, timeMod);
             componentsToShow[i] = comp;
             if (!Arrays.asList(componentsShown).contains(comp)) {
                 contentPane.add(comp, componentsToShow.length-i, 0);
@@ -187,7 +187,7 @@ class EventDisplay extends JPanel {
         }
     }
 
-    public void step(ZonedDateTime skyTime, float timeMod) {
+    public void step(ZonedDateTime[] times, float timeMod) {
         Component container = getParent();
         if (container == null) {
             return;
@@ -203,9 +203,9 @@ class EventDisplay extends JPanel {
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClock.formatTimeLeft(linkedData.active(skyTime) ? linkedData.durationLeft(skyTime) : (linkedData.getTimeLeft(skyTime) == null ? -1 : linkedData.getTimeLeft(skyTime))),
-                linkedData.active(skyTime),
-                linkedData.percentElapsed(skyTime)
+                SkyClock.formatTimeLeft(linkedData.active(times) ? linkedData.durationLeft(times) : (linkedData.getTimeLeft(times) == null ? -1 : linkedData.getTimeLeft(times))),
+                linkedData.active(times),
+                linkedData.percentElapsed(times)
         );
     }
 

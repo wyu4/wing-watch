@@ -25,7 +25,7 @@ public class GlobalClockDisplay extends JPanel {
         add(skyLabel);add(localLabel);
     }
 
-    public void step(ZonedDateTime skyTime) {
+    public void step(ZonedDateTime[] times) {
         int titleSize = (int)(App.SCREEN_SIZE.width * 0.015f);
         int timeSize = (int)(App.SCREEN_SIZE.width * 0.01f);
 
@@ -36,21 +36,20 @@ public class GlobalClockDisplay extends JPanel {
         localLabel.setFont(new Font(localLabel.getFont().getName(), localLabel.getFont().getStyle(), timeSize));
 
         skyLabel.setText(String.format("%04d/%02d/%02d  %02d:%02d:%02d",
-                    skyTime.getYear(),
-                    skyTime.getMonth().getValue(),
-                    skyTime.getDayOfMonth(),
-                    skyTime.getHour(),
-                    skyTime.getMinute(),
-                    skyTime.getSecond()
+                times[0].getYear(),
+                times[0].getMonth().getValue(),
+                times[0].getDayOfMonth(),
+                times[0].getHour(),
+                times[0].getMinute(),
+                times[0].getSecond()
                 ));
-        LocalDateTime localTime = LocalDateTime.now();
         localLabel.setText(String.format("%04d/%02d/%02d  %02d:%02d:%02d",
-                localTime.getYear(),
-                localTime.getMonth().getValue(),
-                localTime.getDayOfMonth(),
-                localTime.getHour(),
-                localTime.getMinute(),
-                localTime.getSecond()
+                times[1].getYear(),
+                times[1].getMonth().getValue(),
+                times[1].getDayOfMonth(),
+                times[1].getHour(),
+                times[1].getMinute(),
+                times[1].getSecond()
         ));
     }
 }

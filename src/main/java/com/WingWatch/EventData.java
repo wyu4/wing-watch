@@ -32,9 +32,6 @@ public class EventData {
         this.timeType = timeType;
         this.timeLeft =
                 (time) -> {
-                    if (timeType == TimeType.LOCAL) {
-                        time = ZonedDateTime.now();
-                    }
                     return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
                             % (cooldownSeconds);
                 };
@@ -55,9 +52,6 @@ public class EventData {
         this.timeType = timeType;
         this.timeLeft =
                 (time) -> {
-                    if (timeType == TimeType.LOCAL) {
-                        time = ZonedDateTime.now();
-                    }
                     Integer currentDay = time.getDayOfWeek().getValue();
                     if (onDays.contains(currentDay)) {
                         this.cooldown = cooldownSeconds;
@@ -149,13 +143,16 @@ public class EventData {
         return name;
     }
 
-    public Long getTimeLeft(ZonedDateTime skyTime) {
-        return timeLeft.apply(skyTime);
+    public Long getTimeLeft(ZonedDateTime[] times) {
+        return switch (timeType) {
+            case LOCAL -> timeLeft.apply(times[1]);
+            default -> timeLeft.apply(times[0]);
+        };
 //        return null;
     }
 
-    public boolean active(ZonedDateTime skyTime) {
-        Long timeLeft = getTimeLeft(skyTime);
+    public boolean active(ZonedDateTime[] times) {
+        Long timeLeft = getTimeLeft(times);
         if (timeLeft == null) {
             return false;
         }
@@ -163,23 +160,20 @@ public class EventData {
         return (cooldown - timeLeft) <= duration;
     }
 
-    public float percentElapsed(ZonedDateTime skyTime) {
-        Long timeLeft = getTimeLeft(skyTime);
+    public float percentElapsed(ZonedDateTime[] times) {
+        Long timeLeft = getTimeLeft(times);
         if (timeLeft == null) {
             return 0f;
         }
-        if (active(skyTime)) {
+        if (active(times)) {
             return Math.clamp(1f - ((float) (cooldown - timeLeft) / duration), 0, 1f);
         } else {
             return Math.clamp(((float) ((cooldown - duration) - timeLeft) / (cooldown - duration)), 0, 1f);
         }
     }
 
-    public long durationLeft(ZonedDateTime skyTime) {
-        if (active(skyTime)) {
-            return Math.clamp(duration-(cooldown - getTimeLeft(skyTime)), 0, duration);
-        }
-        return 0;
+    public long durationLeft(ZonedDateTime[] times) {
+        return Math.clamp(duration-(cooldown - getTimeLeft(times)), 0, duration);
     }
 
     @Override

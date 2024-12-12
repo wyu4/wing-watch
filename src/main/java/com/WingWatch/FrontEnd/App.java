@@ -23,6 +23,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
     private static List<App> SESSIONS = new ArrayList<>();
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
+    private ZonedDateTime[] times = new ZonedDateTime[2];
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
@@ -71,13 +72,14 @@ public class App extends JFrame implements ActionListener, WindowListener {
         if (!SESSIONS.getFirst().equals(this)) {
             SESSIONS.getFirst().closeFrame();
         }
-        ZonedDateTime skyTime = offsetTimeSlider.getOffset(SkyClock.getSkyTime());
-//        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
+        times[0] = offsetTimeSlider.getOffset(SkyClock.getSkyTime());
+        times[1] = offsetTimeSlider.getOffset(ZonedDateTime.now());
+//        times[0] = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = ((float) delta) / runtime.getDelay();
 
-        OrderedSchedule.stepAll(skyTime, timeMod);
-        globalClockDisplay.step(skyTime);
+        OrderedSchedule.stepAll(times, timeMod);
+        globalClockDisplay.step(times);
 
         repaint();
         lastFrame = System.currentTimeMillis();
