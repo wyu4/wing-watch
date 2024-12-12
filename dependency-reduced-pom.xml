@@ -65,6 +65,10 @@
                 <initialHeapSize>512</initialHeapSize>
                 <maxHeapSize>1024</maxHeapSize>
               </jre>
+              <singleInstance>
+                <mutexName>WingWatch</mutexName>
+                <windowTitle>SkyEvents</windowTitle>
+              </singleInstance>
               <versionInfo>
                 <fileVersion>1.0.0.0</fileVersion>
                 <txtFileVersion>1.0.0.0</txtFileVersion>
@@ -73,7 +77,7 @@
                 <companyName>Wallibe</companyName>
                 <productVersion>0.0.0.0</productVersion>
                 <txtProductVersion>${project.version}</txtProductVersion>
-                <productName>SKyEvents</productName>
+                <productName>Sky Events</productName>
                 <internalName>WingWatch</internalName>
                 <originalFilename>WingWatch.exe</originalFilename>
               </versionInfo>
