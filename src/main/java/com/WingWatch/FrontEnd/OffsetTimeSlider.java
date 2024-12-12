@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 public class OffsetTimeSlider extends JPanel implements ActionListener {
     private final JSlider slider = new JSlider();
-    private final JLabel timeLabel = new JLabel("+/-" + SkyClock.formatTimeLeft(0L));
+    private final JLabel timeLabel = new JLabel("+/-" + SkyClock.formatTimeLeft(0L), SwingConstants.CENTER);
     private final JButton stepBackwards = new JButton("-10"), resetButton = new JButton("0"), stepForward = new JButton("+10");
 
     public OffsetTimeSlider() {
@@ -44,6 +44,7 @@ public class OffsetTimeSlider extends JPanel implements ActionListener {
         add(slider, constraints);
 
         constraints.gridx = 2; constraints.gridy = 1;
+        constraints.weightx = 0;
         add(timeLabel, constraints);
 
         constraints.gridx = 3; constraints.gridy = 1;
