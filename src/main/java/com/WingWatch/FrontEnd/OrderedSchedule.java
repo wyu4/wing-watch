@@ -84,6 +84,10 @@ public class OrderedSchedule extends JScrollPane {
     }
 
     private double getSortValue(ZonedDateTime skyTime, EventData event) {
+        Long timeLeft = event.getTimeLeft(skyTime);
+        if (timeLeft == null) {
+            return orderedEvents.length;
+        }
         return event.active(skyTime) ? -event.percentElapsed(skyTime) : event.getTimeLeft(skyTime);
     }
 
@@ -199,7 +203,7 @@ class EventDisplay extends JPanel {
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClock.formatTimeLeft(linkedData.active(skyTime) ? linkedData.durationLeft(skyTime) : linkedData.getTimeLeft(skyTime)),
+                SkyClock.formatTimeLeft(linkedData.active(skyTime) ? linkedData.durationLeft(skyTime) : (linkedData.getTimeLeft(skyTime) == null ? -1 : linkedData.getTimeLeft(skyTime))),
                 linkedData.active(skyTime),
                 linkedData.percentElapsed(skyTime)
         );
@@ -286,7 +290,7 @@ class ContentPanel extends JPanel {
             activeLabel.setForeground(new Color(255, 255, 255));
             progress.setForeground(new Color(47, 69, 89));
         }
-        progress.setValue((int)(progress.getMaximum()*percent));
+        progress.setValue((int)(progress.getMaximum()*Math.clamp(percent, 0, 1f)));
         progress.setString("%" + percent);
     }
 

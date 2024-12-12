@@ -105,19 +105,22 @@ public class EventData {
         this.duration = Math.max(durationSeconds, 10);
     }
 
-    public EventData(String name, ZonedDateTime start, ZonedDateTime end) {
+    public EventData(String name, ZonedDateTime start, ZonedDateTime end, long cooldownAfterEnd) {
         this.name = name;
         this.timeType = TimeType.SKY;
         this.timeLeft = (time) -> {
-
-            if (Duration.between(time, start).isNegative() && Duration.between(time, end).isPositive()) {
+            if (Duration.between(time, end).isPositive()) {
                 this.duration = Duration.between(start, end).getSeconds();
-                this.cooldown = Duration.between(start, start.plusYears(1)).getSeconds();
-                return Duration.between(time, start.plusYears(1)).getSeconds();
+                this.cooldown = Duration.between(start, end.plusSeconds(cooldownAfterEnd)).getSeconds();
+                if (Duration.between(time, start).isNegative()) {
+                    return Duration.between(time, end.plusSeconds(cooldownAfterEnd)).getSeconds();
+                } else {
+                    return Duration.between(time, start).getSeconds();
+                }
             } else {
                 this.duration = 0L;
                 this.cooldown = 1L;
-                return 0L;
+                return null;
             }
         };
         this.cooldown = 0;
@@ -128,20 +131,28 @@ public class EventData {
         return name;
     }
 
-    public long getTimeLeft(ZonedDateTime skyTime) {
+    public Long getTimeLeft(ZonedDateTime skyTime) {
         return timeLeft.apply(skyTime);
+//        return null;
     }
 
     public boolean active(ZonedDateTime skyTime) {
-//        return false;
+        Long timeLeft = getTimeLeft(skyTime);
+        if (timeLeft == null) {
+            return false;
+        }
         return (cooldown - getTimeLeft(skyTime)) <= duration;
     }
 
     public float percentElapsed(ZonedDateTime skyTime) {
+        Long timeLeft = getTimeLeft(skyTime);
+        if (timeLeft == null) {
+            return 0f;
+        }
         if (active(skyTime)) {
-            return Math.clamp(1f - ((float) (cooldown - getTimeLeft(skyTime)) / duration), 0, 1f);
+            return Math.clamp(1f - ((float) (cooldown - timeLeft) / duration), 0, 1f);
         } else {
-            return Math.clamp(((float) ((cooldown - duration) - getTimeLeft(skyTime)) / (cooldown - duration)), 0, 1f);
+            return Math.clamp(((float) ((cooldown - duration) - timeLeft) / (cooldown - duration)), 0, 1f);
         }
     }
 

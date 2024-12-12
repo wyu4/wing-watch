@@ -23,10 +23,6 @@ import java.util.List;
 
 public class App extends JFrame implements ActionListener, WindowListener {
     private static List<App> SESSIONS = new ArrayList<>();
-//    public static final Dimension SCREEN_SIZE = new Dimension(
-//            (int)(Toolkit.getDefaultToolkit().getScreenSize().width*0.9f),
-//            (int)(Toolkit.getDefaultToolkit().getScreenSize().height*0.9f)
-//    );
     public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
     private final Timer runtime = new Timer(1, this);
@@ -57,6 +53,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         add(globalClockDisplay, BorderLayout.NORTH);
 
         setVisible(true);
+        requestFocus();
         revalidate();
 
         SESSIONS.add(this);
@@ -72,11 +69,10 @@ public class App extends JFrame implements ActionListener, WindowListener {
             return;
         }
         if (!SESSIONS.getFirst().equals(this)) {
-            System.err.println("Only one session at a time.");
-            closeFrame();
+            SESSIONS.getFirst().closeFrame();
         }
         ZonedDateTime skyTime = SkyClock.getSkyTime();
-//        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 15, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
+//        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = ((float) delta) / runtime.getDelay();
 

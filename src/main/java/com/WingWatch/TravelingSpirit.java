@@ -97,7 +97,8 @@ public class TravelingSpirit {
 
     public static EventData createData() {
         ZonedDateTime[] dates = getDate();
-        return new EventData(getNameText(), dates[0], dates[1]);
+        System.out.println(getNameText());
+        return new EventData(getNameText(), dates[0], dates[1], 14*24*60*60);
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {

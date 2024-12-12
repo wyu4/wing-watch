@@ -72,7 +72,10 @@ public abstract class SkyClock {
         REGION_DATA = getVariables(REGION_URL);
     }
 
-    public static String formatTimeLeft(long remainingTime) {
+    public static String formatTimeLeft(Long remainingTime) {
+        if (remainingTime == null || remainingTime < 0) {
+            return "???";
+        }
         return String.format("%02d : %02d : %02d : %02d",
                 remainingTime/(60*60*24),
                 remainingTime/(60*60) % 24,
