@@ -15,8 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +26,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
+    private final OffsetTimeSlider offsetTimeSlider = new OffsetTimeSlider();
 
     private Long lastFrame = null;
     private ZonedDateTime testTime1, testTime2;
@@ -51,6 +50,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         addWindowListener(this);
         add(tabs, BorderLayout.CENTER);
         add(globalClockDisplay, BorderLayout.NORTH);
+        add(offsetTimeSlider, BorderLayout.SOUTH);
 
         setVisible(true);
         requestFocus();
@@ -71,7 +71,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         if (!SESSIONS.getFirst().equals(this)) {
             SESSIONS.getFirst().closeFrame();
         }
-        ZonedDateTime skyTime = SkyClock.getSkyTime();
+        ZonedDateTime skyTime = offsetTimeSlider.getOffset(SkyClock.getSkyTime());
 //        ZonedDateTime skyTime = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = ((float) delta) / runtime.getDelay();
