@@ -24,9 +24,9 @@ public class Start {
         try {
             FlatLaf.registerCustomDefaultsSource("themes");
             WingWatchDark.setup();
-            EventQueue.invokeLater(App::new);
         } catch (Exception e) {
-            System.err.println("Error on startup: " + e);
+            System.err.println("Error registering FlatLaf themes: " + e);
         }
+        EventQueue.invokeLater(App::new);
     }
 }
