@@ -1,6 +1,6 @@
 package com.WingWatch.FrontEnd;
 
-import com.WingWatch.SkyClockUtils;
+import com.WingWatch.WebScraping.SkyClockUtils;
 
 import javax.swing.*;
 import java.awt.*;

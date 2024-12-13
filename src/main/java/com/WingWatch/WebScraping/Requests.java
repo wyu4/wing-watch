@@ -1,4 +1,4 @@
-package com.WingWatch;
+package com.WingWatch.WebScraping;
 
 import java.io.BufferedReader;
 import java.io.IOException;

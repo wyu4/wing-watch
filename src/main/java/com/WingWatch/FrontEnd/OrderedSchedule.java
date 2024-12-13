@@ -1,7 +1,7 @@
 package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
-import com.WingWatch.SkyClockUtils;
+import com.WingWatch.WebScraping.SkyClockUtils;
 import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.*;

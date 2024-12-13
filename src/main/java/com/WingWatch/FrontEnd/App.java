@@ -1,8 +1,8 @@
 package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
-import com.WingWatch.SkyClockUtils;
-import com.WingWatch.WikiUtils;
+import com.WingWatch.WebScraping.SkyClockUtils;
+import com.WingWatch.WebScraping.WikiUtils;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;

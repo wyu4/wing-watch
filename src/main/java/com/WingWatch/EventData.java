@@ -1,5 +1,8 @@
 package com.WingWatch;
 
+import com.WingWatch.WebScraping.SkyClockUtils;
+import com.WingWatch.WebScraping.WikiUtils;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;

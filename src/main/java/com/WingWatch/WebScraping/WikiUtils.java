@@ -1,5 +1,6 @@
-package com.WingWatch;
+package com.WingWatch.WebScraping;
 
+import com.WingWatch.EventData;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

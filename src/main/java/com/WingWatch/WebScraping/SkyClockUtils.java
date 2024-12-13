@@ -1,4 +1,4 @@
-package com.WingWatch;
+package com.WingWatch.WebScraping;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
