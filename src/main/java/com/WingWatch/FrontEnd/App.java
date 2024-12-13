@@ -4,13 +4,8 @@ import com.WingWatch.EventData;
 import com.WingWatch.WebScraping.SkyClockUtils;
 import com.WingWatch.WebScraping.WikiUtils;
 
-import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import javax.swing.Timer;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -19,38 +14,45 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class App extends JFrame implements ActionListener, WindowListener {
+public class App extends JFrame implements ActionListener, WindowListener, Refreshable {
     private static List<App> SESSIONS = new ArrayList<>();
-    public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+    public static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
     private ZonedDateTime[] times = new ZonedDateTime[2];
     private final Timer runtime = new Timer(1, this);
     private final JTabbedPane tabs = new JTabbedPane();
     private final GlobalClockDisplay globalClockDisplay = new GlobalClockDisplay();
     private final OffsetTimeSlider offsetTimeSlider = new OffsetTimeSlider();
-
+    private final OrderedSchedule
+            waxEvents = new OrderedSchedule(),
+            questEvents = new OrderedSchedule(),
+            concertShowEvents = new OrderedSchedule(),
+            seasonalEvents = new OrderedSchedule(),
+            resetEvents = new OrderedSchedule(),
+            dayCycleEvents = new OrderedSchedule();
+    private final ConfigTab configs = new ConfigTab();
     private Long lastFrame = null;
     private ZonedDateTime testTime1, testTime2;
 
     public App() {
         super("Sky Events");
 
-        SkyClockUtils.refreshData();
-        WikiUtils.refreshSources();
+        refreshData();
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2f), SCREEN_SIZE.height/3));
+        setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2f), (int)(SCREEN_SIZE.height/2.5f)));
         setMaximumSize(SCREEN_SIZE);
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
 
-        tabs.add("Wax", new OrderedSchedule(EventData.getWaxEvents()));
-        tabs.add("Quests", new OrderedSchedule(EventData.getQuests()));
-        tabs.add("Concerts & Shows", new OrderedSchedule(EventData.getConcertsShows()));
-        tabs.add("Seasonals", new OrderedSchedule(EventData.getSeasonalEvents()));
-        tabs.add("Resets", new OrderedSchedule(EventData.getResets()));
-        tabs.add("Day Cycle", new OrderedSchedule(EventData.getDayCycle()));
+        tabs.add("Wax", waxEvents);
+        tabs.add("Quests", questEvents);
+        tabs.add("Concerts & Shows", concertShowEvents);
+        tabs.add("Seasonals", seasonalEvents);
+        tabs.add("Resets", resetEvents);
+        tabs.add("Day Cycle", dayCycleEvents);
+        tabs.add("Extras", configs);
 
         addWindowListener(this);
         add(tabs, BorderLayout.CENTER);
@@ -62,6 +64,21 @@ public class App extends JFrame implements ActionListener, WindowListener {
         revalidate();
 
         SESSIONS.add(this);
+    }
+
+    @Override
+    public void refreshData() {
+        SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+        SkyClockUtils.refreshData();
+        WikiUtils.refreshSources();
+        EventData.clearPresets();
+
+        waxEvents.trackEvents(EventData.getWaxEvents());
+        questEvents.trackEvents(EventData.getQuests());
+        concertShowEvents.trackEvents(EventData.getConcertsShows());
+        seasonalEvents.trackEvents(EventData.getSeasonalEvents());
+        resetEvents.trackEvents(EventData.getResets());
+        dayCycleEvents.trackEvents(EventData.getDayCycle());
     }
 
     @Override
@@ -84,6 +101,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
         OrderedSchedule.stepAll(times, timeMod);
         globalClockDisplay.step(times);
+        configs.step();
 
         repaint();
         lastFrame = System.currentTimeMillis();
@@ -126,5 +144,35 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
     private void closeFrame() {
         dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }
+}
+
+class ConfigTab extends JScrollPane {
+    private final JPanel contentPane = new JPanel();
+
+    public ConfigTab() {
+        setName("ConfigTab");
+        setBorder(null);
+        setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        viewport.setName("Viewport");
+        viewport.setBackground(new Color(0, 0, 0, 0));
+        viewport.setBorder(null);
+        viewport.setLayout(null);
+        viewport.setDoubleBuffered(true);
+        viewport.setLocation(0, 0);
+        viewport.setSize(getSize());
+
+        contentPane.setName("ContentPane");
+        contentPane.setBackground(new Color(0, 0, 0, 0));
+
+        viewport.setView(contentPane);
+    }
+
+    public void step() {
+        if (!isVisible()) {
+            return;
+        }
     }
 }

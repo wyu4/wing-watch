@@ -16,7 +16,6 @@ public class OrderedSchedule extends JScrollPane {
     private static final List<OrderedSchedule> SCHEDULES = new ArrayList<>();
 
     private final HashMap<EventData, EventDisplay> schedule = new HashMap<>();
-    private final JViewport viewport = new JViewport();
     private final JLayeredPane contentPane = new JLayeredPane();
     private EventData[] orderedEvents;
 
@@ -24,6 +23,10 @@ public class OrderedSchedule extends JScrollPane {
         for (OrderedSchedule schedule : SCHEDULES) {
             schedule.step(times, timeMod);
         }
+    }
+
+    public OrderedSchedule() {
+        this(new EventData[0]);
     }
 
     public OrderedSchedule(EventData[] events) {
@@ -42,7 +45,6 @@ public class OrderedSchedule extends JScrollPane {
         contentPane.setDoubleBuffered(true);
         contentPane.setBackground(new Color(0, 0, 0, 0));
         viewport.setView(contentPane);
-        setViewport(viewport);
 
         SCHEDULES.add(this);
 

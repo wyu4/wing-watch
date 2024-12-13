@@ -4,15 +4,19 @@ import com.WingWatch.EventData;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 
-public class WikiUtils {
+public abstract class WikiUtils {
     private static final String TRAVELLING_SPIRIT = "https://sky-children-of-the-light.fandom.com/wiki/Traveling_Spirits";
     private static final String SEASONAL_EVENTS = "https://sky-children-of-the-light.fandom.com/wiki/Seasonal_Events";
+    private static final String MAIN_PAGE = "https://sky-children-of-the-light.fandom.com/wiki/Sky:_Children_of_the_Light_Wiki";
 
     private static final HashMap<String, Integer> MONTHS = new HashMap<>();
     private static final HashMap<String, String> SOURCES = new HashMap<>();
@@ -104,6 +108,7 @@ public class WikiUtils {
     public static void refreshSources() {
         SOURCES.put(TRAVELLING_SPIRIT, getSource(TRAVELLING_SPIRIT));
         SOURCES.put(SEASONAL_EVENTS, getSource(SEASONAL_EVENTS));
+        SOURCES.put(MAIN_PAGE, getSource(MAIN_PAGE));
     }
 
     public static EventData getTravellingSpirit(ZonedDateTime currentTime) {
@@ -183,14 +188,54 @@ public class WikiUtils {
         }
     }
 
+    public static EventData getDaysEvent(ZonedDateTime currentTime) {
+        // Using the main page because the wiki doesn't have its own isolated page dedicated to current "days of" events. Should be changed once one has been found.
+        String source = SOURCES.get(MAIN_PAGE);
+        String nameText = "Days of ???";
+        String dateText = null;
+        try {
+            Document doc = Jsoup.parse(source);
+            Element middle = doc.selectFirst("div[class=mainpage-block mainpage-block-middle]");
+            if (middle == null) {
+                throw new NullPointerException("Could not find middle in Main page source.");
+            }
+            Element content = middle.selectFirst("center:has(b:has(a))");
+            if (content == null) {
+                throw new NullPointerException("Content in middle in Main page source.");
+            }
+            Element title = content.selectFirst("a[title]");
+            if (title == null) {
+                throw new NullPointerException("Could not find title in content in Main page source.");
+            } else {
+                nameText = title.text();
+            }
+            Element breakline = content.selectFirst("br");
+            if (breakline == null) {
+                throw new NullPointerException("Breakline not found in content in Main page source.");
+            }
+            TextNode dateNode = (TextNode) breakline.nextSibling();
+            if (dateNode == null) {
+                throw new NullPointerException("Could not get date period from content.");
+            } else {
+                dateText = dateNode.text();
+            }
+            ZonedDateTime[] period = getPeriod(currentTime, dateText);
+            return new EventData(nameText, period[0], period[1], 365*24*60*60);
+        } catch (Exception e) {
+            System.err.println("Could not create days event: " + e.getMessage());
+            return new EventData(nameText);
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         SkyClockUtils.refreshData();
         refreshSources();
-        System.out.println(getSeasonEvent(SkyClockUtils.getSkyTime()));
-
-//        File output = new File("output.html");
+        getDaysEvent(null);
+//        System.out.println(getSeasonEvent(SkyClockUtils.getSkyTime()));
+//
+//        File output = new File("target\\webScrapeTestSource.html");
 //        output.createNewFile();
 //        System.setOut(new PrintStream(output));
-//        System.out.println(SOURCES.get(SEASONAL_EVENTS));
+//        System.out.println(SOURCES.get(MAIN_PAGE));
     }
 }

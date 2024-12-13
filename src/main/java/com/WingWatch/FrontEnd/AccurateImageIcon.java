@@ -51,6 +51,19 @@ public class AccurateImageIcon extends ImageIcon {
     }
 
     /**
+     * Create a new AccurateImageIcon object.
+     * @param path The path to the image
+     * @param mode The selected paint mode
+     */
+    public AccurateImageIcon(String path, PaintMode mode) {
+        super(path);
+        this.mode = mode;
+        xMirrored = false;
+        yMirrored = false;
+        alpha = 1f;
+    }
+
+    /**
      * Resize the image.
      * @param width New width
      * @param height New height

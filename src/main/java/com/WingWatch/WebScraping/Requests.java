@@ -9,7 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-public class Requests {
+public abstract class Requests {
     private static InputStream getInputStream(String targetUrl) throws IOException, URISyntaxException {
         URL url;
         HttpURLConnection connection;
