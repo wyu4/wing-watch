@@ -7,15 +7,14 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class WikiUtils {
     private static final String TRAVELLING_SPIRIT = "https://sky-children-of-the-light.fandom.com/wiki/Traveling_Spirits";
-    private static final String DATE_CLASS = ".pi-data-value.pi-font";
-    private static final String NAME_CLASS = "h2[data-source=title]";
+    private static final String SEASONAL_EVENTS = "https://sky-children-of-the-light.fandom.com/wiki/Seasonal_Events";
 
     private static final HashMap<String, Integer> MONTHS = new HashMap<>();
+    private static final HashMap<String, String> SOURCES = new HashMap<>();
 
     static {
         MONTHS.put("JANUARY", 1);
@@ -36,28 +35,8 @@ public class WikiUtils {
         try {
             return Requests.requestGetString(wikiUrl).toString();
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static String getDateText(String source) {
-        Document doc = Jsoup.parse(source);
-        Element date = doc.selectFirst(DATE_CLASS);
-        if (date != null) {
-            return date.text().toUpperCase().replaceAll(",", "");
-        } else {
-            throw new NullPointerException("Date not found in Traveling Spirit source.");
-        }
-    }
-
-    public static String getNameText(String source) {
-        Document doc = Jsoup.parse(source);
-        Element date = doc.selectFirst(NAME_CLASS);
-        if (date != null) {
-            return date.text();
-        } else {
-            System.err.println("Name not found in source.");
-            return "Unknown Spirit";
+            System.err.println("Error getting source " + wikiUrl + ": " + e.getMessage());
+            return SOURCES.get(wikiUrl);
         }
     }
 
@@ -68,7 +47,7 @@ public class WikiUtils {
                 throw new NullPointerException("dateText must not be null.");
             }
 
-            String[] dateData = dateText.split(" ");
+            String[] dateData = dateText.toUpperCase().replaceAll("\\p{Punct}", "").split(" ");
 
             Integer month1 = null;
             Integer day1 = null;
@@ -121,14 +100,96 @@ public class WikiUtils {
         return result;
     }
 
-    public static EventData getTravellingSpirit(ZonedDateTime currentTime) {
-        String source = getSource(TRAVELLING_SPIRIT);
-        ZonedDateTime[] period = getPeriod(currentTime, getDateText(source));
-        return new EventData(getNameText(source), period[0], period[1], 14*24*60*60);
+    public static void refreshSources() {
+        SOURCES.put(TRAVELLING_SPIRIT, getSource(TRAVELLING_SPIRIT));
+        SOURCES.put(SEASONAL_EVENTS, getSource(SEASONAL_EVENTS));
     }
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
-        SkyClockUtils.refreshData();
+    public static EventData getTravellingSpirit(ZonedDateTime currentTime) {
+        String source = SOURCES.get(TRAVELLING_SPIRIT);
+        String nameText = "Unknown Spirit";
+        String dateText = null;
 
+        try {
+            Document doc = Jsoup.parse(source);
+            Element nameClass = doc.selectFirst("h2[data-source=title]");
+            if (nameClass != null) {
+                nameText = nameClass.text();
+            } else {
+                throw new NullPointerException("Name not found in source.");
+            }
+
+            Element dateClass = doc.selectFirst(".pi-data-value.pi-font");
+            if (dateClass != null) {
+                dateText = dateClass.text();
+            } else {
+                throw new NullPointerException("Date not found in Traveling Spirit source.");
+            }
+
+            ZonedDateTime[] period = getPeriod(currentTime, dateText);
+            return new EventData(nameText, period[0], period[1], 14*24*60*60);
+        } catch (Exception e) {
+            System.err.println("Could not create travelling spirit event: " + e.getMessage());
+            return new EventData(nameText);
+        }
+    }
+
+    public static EventData getSeasonEvent(ZonedDateTime currentTime) {
+        String source = SOURCES.get(SEASONAL_EVENTS);
+        String nameText = "Season of ???";
+        String dateText = null;
+
+        try {
+            Document doc = Jsoup.parse(source);
+//            Element nameSection = doc.selectFirst("li:has(span:matchesOwn(Seasons & Events))");
+//            if (nameSection == null) {
+//                throw new NullPointerException("Seasons & Events section not found in Seasonal Source.");
+//            }
+//            Element latestSeasonName = nameSection.selectFirst(".wds-dropdown__content ul.wds-list li span");
+//            if (latestSeasonName != null) {
+//                nameText = latestSeasonName.text();
+//            } else {
+//                throw new NullPointerException("Latest name not found in Seasonal Source's section.");
+//            }
+
+            Element articleTable = doc.selectFirst("table.article-table");
+            if (articleTable == null) {
+                throw new NullPointerException("Article table not found in Seasonal Source.");
+            }
+            Element latestSeasonArticle = articleTable.selectFirst("tr:has(a[title][href])");
+            if (latestSeasonArticle == null) {
+                throw new NullPointerException("Latest season row in Article table not found in Seasonal Source.");
+            }
+            Element latestSeasonName = latestSeasonArticle.selectFirst("td > a[title]");
+            if (latestSeasonName == null) {
+                throw new NullPointerException("Latest season name in row not found in Seasonal Source.");
+            } else {
+                nameText = latestSeasonName.text();
+            }
+
+            Element dateClass = latestSeasonArticle.selectFirst("td:not(:has(*))");
+            if (dateClass == null) {
+                throw new NullPointerException("Latest season period in row in Article table not found in Seasonal Source.");
+            } else {
+                dateText = dateClass.text();
+            }
+
+            ZonedDateTime[] period = getPeriod(currentTime, dateText);
+            return new EventData(nameText, period[0], period[1], 14*24*60*60);
+        }  catch (Exception e) {
+            System.err.println("Could not create season event: " + e.getMessage());
+            return new EventData(nameText);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        SkyClockUtils.refreshData();
+        refreshSources();
+        System.out.println(getSeasonEvent(SkyClockUtils.getSkyTime()));
+
+//        File output = new File("output.html");
+//        output.createNewFile();
+//        System.setOut(new PrintStream(output));
+//        System.out.println(SOURCES.get(SEASONAL_EVENTS));
     }
 }

@@ -3,10 +3,7 @@ package com.WingWatch;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 public class EventData {
@@ -84,20 +81,27 @@ public class EventData {
 
     public static EventData[] getSeasonalEvents() {
         if (SEASONAL_EVENTS == null) {
+            ZonedDateTime currentTime = SkyClockUtils.getSkyTime();
             SEASONAL_EVENTS = new EventData[] {
-                    WikiUtils.getTravellingSpirit(SkyClockUtils.getSkyTime())
+                    WikiUtils.getTravellingSpirit(currentTime),
+                    WikiUtils.getSeasonEvent(currentTime)
             };
         }
         return SEASONAL_EVENTS;
     }
 
-    private final String name;
+    private final String name, stringValue;
     private final Function<ZonedDateTime, Long> timeLeft;
     private long cooldown, duration;
     private final TimeType timeType;
 
     public EventData() {
-        name = "Unknown";
+        this("Empty");
+    }
+
+    public EventData(String name) {
+        this.name = name;
+        stringValue = name + " - Empty Event";
         timeLeft = (time) -> 0L;
         cooldown = 0;
         duration = 0;
@@ -106,6 +110,7 @@ public class EventData {
 
     public EventData(String name, long cooldownSeconds, long offsetSeconds, long durationSeconds, TimeType timeType) {
         this.name = name;
+        this.stringValue = name + " - cooldown: " + cooldownSeconds + ", offset: " + offsetSeconds + ", duration: " + durationSeconds + ", type: " + timeType;
         this.timeType = timeType;
         this.timeLeft =
                 (time) -> {
@@ -126,6 +131,7 @@ public class EventData {
         }
 
         this.name = name;
+        this.stringValue = name + " - days: " + Arrays.toString(days) + "cooldown: " + cooldownSeconds + ", offset: " + offsetSeconds + ", duration: " + durationSeconds + ", type: " + timeType;
         this.timeType = timeType;
         this.timeLeft =
                 (time) -> {
@@ -196,6 +202,7 @@ public class EventData {
 
     public EventData(String name, ZonedDateTime start, ZonedDateTime end, long cooldownAfterEnd) {
         this.name = name;
+        this.stringValue = name + " - starting at: " + start.toString() + ", ending at: " + end.toString() + ", with (theoretical) cooldown " + cooldownAfterEnd + ".";
         this.timeType = TimeType.SKY;
         this.timeLeft = (time) -> {
             if (Duration.between(time, end).isPositive()) {
@@ -255,7 +262,7 @@ public class EventData {
 
     @Override
     public String toString() {
-        return name;
+        return stringValue;
     }
 
     @Override

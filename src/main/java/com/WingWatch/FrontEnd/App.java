@@ -34,6 +34,10 @@ public class App extends JFrame implements ActionListener, WindowListener {
 
     public App() {
         super("Sky Events");
+
+        SkyClockUtils.refreshData();
+        WikiUtils.refreshSources();
+
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension((int)(SCREEN_SIZE.width/2f), SCREEN_SIZE.height/3));

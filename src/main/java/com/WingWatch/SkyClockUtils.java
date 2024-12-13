@@ -34,8 +34,12 @@ public abstract class SkyClockUtils {
         return variables;
     }
 
-    public static void refreshData() throws IOException, URISyntaxException {
-        REGION_DATA = getVariables(REGION_URL);
+    public static void refreshData() {
+        try {
+            REGION_DATA = getVariables(REGION_URL);
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String formatTimeLeft(Long remainingTime) {
