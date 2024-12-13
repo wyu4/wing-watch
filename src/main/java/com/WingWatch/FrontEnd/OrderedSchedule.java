@@ -1,7 +1,7 @@
 package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
-import com.WingWatch.SkyClock;
+import com.WingWatch.SkyClockUtils;
 import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.*;
@@ -203,7 +203,7 @@ class EventDisplay extends JPanel {
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClock.formatTimeLeft(linkedData.active(times) ? linkedData.durationLeft(times) : (linkedData.getTimeLeft(times) == null ? -1 : linkedData.getTimeLeft(times))),
+                SkyClockUtils.formatTimeLeft(linkedData.active(times) ? linkedData.durationLeft(times) : (linkedData.getTimeLeft(times) == null ? -1 : linkedData.getTimeLeft(times))),
                 linkedData.active(times),
                 linkedData.percentElapsed(times)
         );

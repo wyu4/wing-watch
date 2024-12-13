@@ -1,8 +1,8 @@
 package com.WingWatch.FrontEnd;
 
 import com.WingWatch.EventData;
-import com.WingWatch.SkyClock;
-import com.WingWatch.TravelingSpirit;
+import com.WingWatch.SkyClockUtils;
+import com.WingWatch.WikiUtils;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -41,12 +41,12 @@ public class App extends JFrame implements ActionListener, WindowListener {
         setPreferredSize(getMinimumSize());
         setSize(getMinimumSize());
 
-        tabs.add("Wax", new OrderedSchedule(SkyClock.WAX_EVENTS));
-        tabs.add("Quests", new OrderedSchedule(SkyClock.QUESTS));
-        tabs.add("Concerts & Shows", new OrderedSchedule(SkyClock.CONCERTS_SHOWS));
-        tabs.add("Spirits", new OrderedSchedule(new EventData[] {TravelingSpirit.createData()}));
-        tabs.add("Resets", new OrderedSchedule(SkyClock.RESETS));
-        tabs.add("Day Cycle", new OrderedSchedule(SkyClock.DAY_CYCLE));
+        tabs.add("Wax", new OrderedSchedule(EventData.getWaxEvents()));
+        tabs.add("Quests", new OrderedSchedule(EventData.getQuests()));
+        tabs.add("Concerts & Shows", new OrderedSchedule(EventData.getConcertsShows()));
+        tabs.add("Seasonals", new OrderedSchedule(EventData.getSeasonalEvents()));
+        tabs.add("Resets", new OrderedSchedule(EventData.getResets()));
+        tabs.add("Day Cycle", new OrderedSchedule(EventData.getDayCycle()));
 
         addWindowListener(this);
         add(tabs, BorderLayout.CENTER);
@@ -72,7 +72,7 @@ public class App extends JFrame implements ActionListener, WindowListener {
         if (!SESSIONS.getFirst().equals(this)) {
             SESSIONS.getFirst().closeFrame();
         }
-        times[0] = offsetTimeSlider.getOffset(SkyClock.getSkyTime());
+        times[0] = offsetTimeSlider.getOffset(SkyClockUtils.getSkyTime());
         times[1] = offsetTimeSlider.getOffset(ZonedDateTime.now());
 //        times[0] = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;

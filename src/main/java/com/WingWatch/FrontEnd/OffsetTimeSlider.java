@@ -1,6 +1,6 @@
 package com.WingWatch.FrontEnd;
 
-import com.WingWatch.SkyClock;
+import com.WingWatch.SkyClockUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 public class OffsetTimeSlider extends JPanel implements ActionListener {
     private final JSlider slider = new JSlider();
-    private final JLabel timeLabel = new JLabel("+/-" + SkyClock.formatTimeLeft(0L), SwingConstants.CENTER);
+    private final JLabel timeLabel = new JLabel("+/-" + SkyClockUtils.formatTimeLeft(0L), SwingConstants.CENTER);
     private final JButton stepBackwards = new JButton("-10"), resetButton = new JButton("0"), stepForward = new JButton("+10");
 
     public OffsetTimeSlider() {
@@ -63,11 +63,11 @@ public class OffsetTimeSlider extends JPanel implements ActionListener {
     public ZonedDateTime getOffset(ZonedDateTime time) {
         int offsetSeconds = slider.getValue();
         if (offsetSeconds == 0) {
-            timeLabel.setText("+/-" + SkyClock.formatTimeLeft(0L));
+            timeLabel.setText("+/-" + SkyClockUtils.formatTimeLeft(0L));
             resetButton.setVisible(false);
         } else {
             resetButton.setVisible(true);
-            String formattedOffset = SkyClock.formatTimeLeft((long) Math.abs(offsetSeconds));
+            String formattedOffset = SkyClockUtils.formatTimeLeft((long) Math.abs(offsetSeconds));
             timeLabel.setText(offsetSeconds > 0 ? "+" + formattedOffset : "-" + formattedOffset);
         }
         return time.plusSeconds(offsetSeconds);

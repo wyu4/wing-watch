@@ -14,6 +14,83 @@ public class EventData {
         SKY, LOCAL
     }
 
+    private static EventData[] WAX_EVENTS = null;
+
+    private static EventData[] DAY_CYCLE = null;
+
+    private static EventData[] QUESTS = null;
+
+    private static EventData[] CONCERTS_SHOWS = null;
+
+    private static EventData[] RESETS = null;
+
+    private static EventData[] SEASONAL_EVENTS = null;
+
+    public static EventData[] getWaxEvents() {
+        if (WAX_EVENTS == null) {
+            WAX_EVENTS = new EventData[] {
+                    new EventData("Polluted Geyser", 2*60*60, (5*60) + 11, 10*60, EventData.TimeType.SKY),
+                    new EventData("Grandma's Dinner Event", 2*60*60, 35*60 + 20, 10*60, EventData.TimeType.SKY),
+                    new EventData("Sunset Sanctuary Turtle", 2*60*60, 50*60 + 17, 10*60, EventData.TimeType.SKY),
+                    new EventData("Dream Skater", new Integer[] {5,6,7}, 2*60*60, 60*60, 10*60, EventData.TimeType.SKY)
+            };
+        }
+        return WAX_EVENTS;
+    }
+
+    public static EventData[] getDayCycle() {
+        if (DAY_CYCLE == null) {
+            DAY_CYCLE = new EventData[] {
+                    new EventData("Nest Sunset", 60*60, 40*60, (10*60) + 20, EventData.TimeType.SKY),
+                    new EventData("Home Sunrise", 24*60*60, 5*60*60, 4*60*60, EventData.TimeType.LOCAL),
+                    new EventData("Home Cloudy", 24*60*60, 9*60*60, 60*60, EventData.TimeType.LOCAL),
+                    new EventData("Home Daytime", 24*60*60, 10*60*60, 6*60*60, EventData.TimeType.LOCAL),
+                    new EventData("Home Cloudy", 24*60*60, 16*60*60, 60*60, EventData.TimeType.LOCAL),
+                    new EventData("Home Sunset", 24*60*60, 17*60*60, 4*60*60, EventData.TimeType.LOCAL),
+                    new EventData("Home Nighttime", 24*60*60, 21*60*60, 8*60*60, EventData.TimeType.LOCAL)
+            };
+        }
+        return DAY_CYCLE;
+    }
+
+    public static EventData[] getQuests() {
+        if (QUESTS == null) {
+            QUESTS = new EventData[] {
+                    new EventData("Daily Quests", 24*60*60, 0, 24*60*60, EventData.TimeType.SKY),
+            };
+        }
+        return QUESTS;
+    }
+
+    public static EventData[] getConcertsShows() {
+        if (CONCERTS_SHOWS == null) {
+            CONCERTS_SHOWS = new EventData[] {
+                    new EventData("Aurora", 4*60*60, (2*60*60)+(10*60), 50*60, EventData.TimeType.SKY)
+            };
+        }
+        return CONCERTS_SHOWS;
+    }
+
+    public static EventData[] getResets() {
+        if (RESETS == null) {
+            RESETS = new EventData[] {
+                    new EventData("Daily Reset", 24*60*60, 0, 0, EventData.TimeType.SKY),
+                    new EventData("Weekly Reset", new Integer[] {7}, 24*60*60, 0, 0, EventData.TimeType.SKY),
+                    new EventData("Passage Quest Reset", 15*60, 0, 0, EventData.TimeType.SKY),
+            };
+        }
+        return RESETS;
+    }
+
+    public static EventData[] getSeasonalEvents() {
+        if (SEASONAL_EVENTS == null) {
+            SEASONAL_EVENTS = new EventData[] {
+                    WikiUtils.getTravellingSpirit(SkyClockUtils.getSkyTime())
+            };
+        }
+        return SEASONAL_EVENTS;
+    }
+
     private final String name;
     private final Function<ZonedDateTime, Long> timeLeft;
     private long cooldown, duration;

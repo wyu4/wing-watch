@@ -18,7 +18,7 @@ public class Start {
         System.setErr(new PrintStream(errors));
 
         try {
-            SkyClock.refreshData();
+            SkyClockUtils.refreshData();
             FlatLaf.registerCustomDefaultsSource("themes");
             WingWatchDark.setup();
             EventQueue.invokeLater(App::new);
