@@ -88,7 +88,7 @@ public class OrderedSchedule extends JScrollPane {
     private double getSortValue(ZonedDateTime[] times, EventData event) {
         Long timeLeft = event.getTimeLeft(times);
         if (timeLeft == null) {
-            return orderedEvents.length;
+            return Double.MAX_VALUE;
         }
         return event.active(times) ? -event.percentElapsed(times) : event.getTimeLeft(times);
     }

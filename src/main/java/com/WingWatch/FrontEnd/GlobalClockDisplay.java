@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
 
 public class GlobalClockDisplay extends JPanel {
     private final JLabel skyTitle = new JLabel("Sky Time", SwingConstants.CENTER), localTitle = new JLabel("Local Time", SwingConstants.CENTER);
-    private final JLabel skyLabel = new JLabel("00 : 00 : 00 : 00", SwingConstants.CENTER), localLabel = new JLabel("00 : 00 : 00 : 00",  SwingConstants.CENTER);
+    private final JLabel skyLabel = new JLabel("???", SwingConstants.CENTER), localLabel = new JLabel("???",  SwingConstants.CENTER);
 
     public GlobalClockDisplay() {
         setName("GlobalClock");
@@ -35,21 +35,21 @@ public class GlobalClockDisplay extends JPanel {
         skyLabel.setFont(new Font(skyLabel.getFont().getName(), skyLabel.getFont().getStyle(), timeSize));
         localLabel.setFont(new Font(localLabel.getFont().getName(), localLabel.getFont().getStyle(), timeSize));
 
-        skyLabel.setText(String.format("%04d/%02d/%02d  %02d:%02d:%02d",
-                times[0].getYear(),
-                times[0].getMonth().getValue(),
-                times[0].getDayOfMonth(),
-                times[0].getHour(),
-                times[0].getMinute(),
-                times[0].getSecond()
-                ));
-        localLabel.setText(String.format("%04d/%02d/%02d  %02d:%02d:%02d",
-                times[1].getYear(),
-                times[1].getMonth().getValue(),
-                times[1].getDayOfMonth(),
-                times[1].getHour(),
-                times[1].getMinute(),
-                times[1].getSecond()
-        ));
+        skyLabel.setText(formatTime(times[0]));
+        localLabel.setText(formatTime(times[1]));
+    }
+
+    private String formatTime(ZonedDateTime time) {
+        if (time == null) {
+            return "???";
+        }
+        return String.format("%04d/%02d/%02d  %02d:%02d:%02d",
+                time.getYear(),
+                time.getMonth().getValue(),
+                time.getDayOfMonth(),
+                time.getHour(),
+                time.getMinute(),
+                time.getSecond()
+        );
     }
 }

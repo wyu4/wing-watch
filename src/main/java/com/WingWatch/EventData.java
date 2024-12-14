@@ -70,6 +70,9 @@ public class EventData {
 
     public static EventData[] getSeasonalEvents() {
         ZonedDateTime currentTime = SkyClockUtils.getSkyTime();
+        if (currentTime == null) {
+            return new EventData[0];
+        }
         return ifPresetNotFoundReturn("SEASONAL_EVENTS", new EventData[] {
                 WikiUtils.getTravellingSpirit(currentTime),
                 WikiUtils.getSeasonEvent(currentTime),
@@ -78,9 +81,15 @@ public class EventData {
     }
 
     private final String name, stringValue;
-    private final Function<ZonedDateTime, Long> timeLeft;
     private long cooldown, duration;
     private final TimeType timeType;
+    private Function<ZonedDateTime, Long> timeLeft;
+    private final Function<ZonedDateTime, Long> timeLeftAfterChecks = (time) -> {
+        if (time == null || timeLeft == null) {
+            return null;
+        }
+        return timeLeft.apply(time);
+    };
 
     public EventData() {
         this("Empty");
@@ -216,10 +225,9 @@ public class EventData {
 
     public Long getTimeLeft(ZonedDateTime[] times) {
         return switch (timeType) {
-            case LOCAL -> timeLeft.apply(times[1]);
-            default -> timeLeft.apply(times[0]);
+            case LOCAL -> timeLeftAfterChecks.apply(times[1]);
+            default -> timeLeftAfterChecks.apply(times[0]);
         };
-//        return null;
     }
 
     public boolean active(ZonedDateTime[] times) {

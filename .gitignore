@@ -1,5 +1,6 @@
 target/
 Errors.txt
+cache.json
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

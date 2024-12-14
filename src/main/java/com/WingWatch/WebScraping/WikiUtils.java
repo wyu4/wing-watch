@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 
@@ -99,7 +100,7 @@ public abstract class WikiUtils {
             result[0] = ZonedDateTime.of(year1, month1, day1, 0, 0, 0, 0, defaultTime.getZone());
             result[1] = ZonedDateTime.of(year2, month2, day2+1, 0, 0, 0, 0, defaultTime.getZone());
         } catch (Exception e) {
-            System.err.println("Could not get the time range from text \"" + dateText + "\": " + e.getMessage());
+            System.err.println("Could not get the time range from text \"" + dateText + "\": " + e);
         }
 
         return result;
@@ -113,39 +114,41 @@ public abstract class WikiUtils {
 
     public static EventData getTravellingSpirit(ZonedDateTime currentTime) {
         String source = SOURCES.get(TRAVELLING_SPIRIT);
-        String nameText = "Unknown Spirit";
-        String dateText = null;
 
         try {
+            if (source == null) {
+                throw new NullPointerException("Source not found!?");
+            }
             Document doc = Jsoup.parse(source);
             Element nameClass = doc.selectFirst("h2[data-source=title]");
             if (nameClass != null) {
-                nameText = nameClass.text();
+                LocalCache.setValue("TravellingSpiritName", nameClass.text());
             } else {
                 throw new NullPointerException("Name not found in source.");
             }
 
             Element dateClass = doc.selectFirst(".pi-data-value.pi-font");
             if (dateClass != null) {
-                dateText = dateClass.text();
+                LocalCache.setValue("TravellingSpiritDate", dateClass.text());
             } else {
                 throw new NullPointerException("Date not found in Traveling Spirit source.");
             }
 
-            ZonedDateTime[] period = getPeriod(currentTime, dateText);
-            return new EventData(nameText, period[0], period[1], 14*24*60*60);
         } catch (Exception e) {
             System.err.println("Could not create travelling spirit event: " + e.getMessage());
-            return new EventData(nameText);
+//            return new EventData(LocalCache.getValue("TravellingSpiritName", "Travelling Spirit"));
         }
+        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("TravellingSpiritDate"));
+        return new EventData(LocalCache.getValue("TravellingSpiritName", "Travelling Spirit"), period[0], period[1], 14*24*60*60);
     }
 
     public static EventData getSeasonEvent(ZonedDateTime currentTime) {
         String source = SOURCES.get(SEASONAL_EVENTS);
-        String nameText = "Season of ???";
-        String dateText = null;
 
         try {
+            if (source == null) {
+                throw new NullPointerException("Source not found!?");
+            }
             Document doc = Jsoup.parse(source);
 //            Element nameSection = doc.selectFirst("li:has(span:matchesOwn(Seasons & Events))");
 //            if (nameSection == null) {
@@ -170,30 +173,31 @@ public abstract class WikiUtils {
             if (latestSeasonName == null) {
                 throw new NullPointerException("Latest season name in row not found in Seasonal Source.");
             } else {
-                nameText = latestSeasonName.text();
+                LocalCache.setValue("SeasonName", latestSeasonName.text());
             }
 
             Element dateClass = latestSeasonArticle.selectFirst("td:not(:has(*))");
             if (dateClass == null) {
                 throw new NullPointerException("Latest season period in row in Article table not found in Seasonal Source.");
             } else {
-                dateText = dateClass.text();
+                LocalCache.setValue("SeasonDate", dateClass.text());
             }
 
-            ZonedDateTime[] period = getPeriod(currentTime, dateText);
-            return new EventData(nameText, period[0], period[1], 14*24*60*60);
         }  catch (Exception e) {
-            System.err.println("Could not create season event: " + e.getMessage());
-            return new EventData(nameText);
+            System.err.println("Could not create season event: " + e);
+//            return new EventData(LocalCache.getValue("SeasonName", "Season of ???"));
         }
+        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("SeasonDate"));
+        return new EventData(LocalCache.getValue("SeasonName", "Season of ???"), period[0], period[1], 14*24*60*60);
     }
 
     public static EventData getDaysEvent(ZonedDateTime currentTime) {
         // Using the main page because the wiki doesn't have its own isolated page dedicated to current "days of" events. Should be changed once one has been found.
         String source = SOURCES.get(MAIN_PAGE);
-        String nameText = "Days of ???";
-        String dateText = null;
         try {
+            if (source == null) {
+                throw new NullPointerException("Source not found!?");
+            }
             Document doc = Jsoup.parse(source);
             Element middle = doc.selectFirst("div[class=mainpage-block mainpage-block-middle]");
             if (middle == null) {
@@ -207,7 +211,7 @@ public abstract class WikiUtils {
             if (title == null) {
                 throw new NullPointerException("Could not find title in content in Main page source.");
             } else {
-                nameText = title.text();
+                LocalCache.setValue("DaysName", title.text());
             }
             Element breakline = content.selectFirst("br");
             if (breakline == null) {
@@ -217,25 +221,14 @@ public abstract class WikiUtils {
             if (dateNode == null) {
                 throw new NullPointerException("Could not get date period from content.");
             } else {
-                dateText = dateNode.text();
+                LocalCache.setValue("DaysDate", dateNode.text());
             }
-            ZonedDateTime[] period = getPeriod(currentTime, dateText);
-            return new EventData(nameText, period[0], period[1], 365*24*60*60);
         } catch (Exception e) {
-            System.err.println("Could not create days event: " + e.getMessage());
-            return new EventData(nameText);
+            System.err.println("Could not create days event: " + e);
+//            return new EventData(LocalCache.getValue("DaysName", "Days of ???"));
         }
-    }
 
-    public static void main(String[] args) throws IOException {
-        SkyClockUtils.refreshData();
-        refreshSources();
-        getDaysEvent(null);
-//        System.out.println(getSeasonEvent(SkyClockUtils.getSkyTime()));
-//
-//        File output = new File("target\\webScrapeTestSource.html");
-//        output.createNewFile();
-//        System.setOut(new PrintStream(output));
-//        System.out.println(SOURCES.get(MAIN_PAGE));
+        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("DaysDate"));
+        return new EventData(LocalCache.getValue("DaysName", "Days of ???"), period[0], period[1], 365*24*60*60);
     }
 }
