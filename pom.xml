@@ -27,6 +27,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -118,6 +119,11 @@
             <groupId>com.github.eikek</groupId>
             <artifactId>emil-jsoup_2.12</artifactId>
             <version>0.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ejlchina</groupId>
+            <artifactId>data-gson</artifactId>
+            <version>1.4.1</version>
         </dependency>
     </dependencies>
 </project>
