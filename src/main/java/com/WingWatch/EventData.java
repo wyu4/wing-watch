@@ -29,9 +29,9 @@ public class EventData {
 
     public static EventData[] getWaxEvents() {
         return ifPresetNotFoundReturn("WAX", new EventData[] {
-                new EventData("Polluted Geyser", 2*60*60, (5*60) + 11, 10*60, EventData.TimeType.SKY),
-                new EventData("Grandma's Dinner Event", 2*60*60, 35*60 + 20, 10*60, EventData.TimeType.SKY),
-                new EventData("Sunset Sanctuary Turtle", 2*60*60, 50*60 + 17, 10*60, EventData.TimeType.SKY),
+                new EventData("Polluted Geyser", 2*60*60, 5*60, 10*60, EventData.TimeType.SKY),
+                new EventData("Grandma's Dinner Event", 2*60*60, 35*60, 10*60, EventData.TimeType.SKY),
+                new EventData("Sunset Sanctuary Turtle", 2*60*60, 50*60, 10*60, EventData.TimeType.SKY),
                 new EventData("Dream Skater", new Integer[] {5,6,7}, 2*60*60, 60*60, 10*60, EventData.TimeType.SKY)
         });
     }
