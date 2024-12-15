@@ -37,8 +37,9 @@ public abstract class SkyClockUtils {
     public static void refreshData() {
         try {
             REGION_DATA = getVariables(REGION_URL);
+            LocalCache.setValue(US_PACIFIC_TIME_ZONE, REGION_DATA.get(US_PACIFIC_TIME_ZONE));
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+            System.err.println("Could not refresh SkyClock data: " + e);
         }
     }
 
@@ -54,11 +55,24 @@ public abstract class SkyClockUtils {
         );
     }
 
-    private static ZoneId getSkyZone() {
-        return ZoneId.of(REGION_DATA.get(US_PACIFIC_TIME_ZONE));
+    private static ZoneId getSkyZone(boolean tryCacheOnFail) {
+        String zoneName = REGION_DATA.get(US_PACIFIC_TIME_ZONE);
+        if (zoneName == null) {
+            if (tryCacheOnFail) {
+                REGION_DATA.put(US_PACIFIC_TIME_ZONE, LocalCache.getValue(US_PACIFIC_TIME_ZONE));
+                return getSkyZone(false);
+            } else {
+                return null;
+            }
+        }
+        return ZoneId.of(zoneName);
     }
 
     public static ZonedDateTime getSkyTime() {
-        return ZonedDateTime.now(getSkyZone()).truncatedTo(ChronoUnit.SECONDS);
+        ZoneId zone = getSkyZone(true);
+        if (zone == null) {
+            return null;
+        }
+        return ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
 }

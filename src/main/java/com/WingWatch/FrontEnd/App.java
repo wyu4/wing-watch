@@ -93,11 +93,11 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
         if (!SESSIONS.getFirst().equals(this)) {
             SESSIONS.getFirst().closeFrame();
         }
-        times[0] = offsetTimeSlider.getOffset(SkyClockUtils.getSkyTime());
-        times[1] = offsetTimeSlider.getOffset(ZonedDateTime.now());
-//        times[0] = ZonedDateTime.of(2024, 12, 24, 0, 0, 0, 0, SkyClock.getSkyTime().getZone());
         long delta = System.currentTimeMillis() - lastFrame;
         float timeMod = ((float) delta) / runtime.getDelay();
+
+        times[0] = offsetTimeSlider.getOffset(SkyClockUtils.getSkyTime());
+        times[1] = offsetTimeSlider.getOffset(ZonedDateTime.now());
 
         OrderedSchedule.stepAll(times, timeMod);
         globalClockDisplay.step(times);

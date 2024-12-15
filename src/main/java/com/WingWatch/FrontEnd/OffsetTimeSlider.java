@@ -61,6 +61,10 @@ public class OffsetTimeSlider extends JPanel implements ActionListener {
     }
 
     public ZonedDateTime getOffset(ZonedDateTime time) {
+        if (time == null) {
+            return null;
+        }
+
         int offsetSeconds = slider.getValue();
         if (offsetSeconds == 0) {
             timeLabel.setText("+/-" + SkyClockUtils.formatTimeLeft(0L));
