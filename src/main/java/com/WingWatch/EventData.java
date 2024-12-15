@@ -63,7 +63,8 @@ public class EventData {
     public static EventData[] getResets() {
         return ifPresetNotFoundReturn("RESETS", new EventData[] {
                 new EventData("Daily Reset", 24*60*60, 0, 0, EventData.TimeType.SKY),
-                new EventData("Weekly Reset", new Integer[] {7}, 24*60*60, 0, 0, EventData.TimeType.SKY),
+                new EventData("Weekly Reset", new Integer[] {7}, 7*24*60*60, 0, 0, EventData.TimeType.SKY),
+                new EventData("Music Sheet Reset", new Integer[] {1}, 7*24*60*60, 0, 0, EventData.TimeType.SKY),
                 new EventData("Passage Quest Reset", 15*60, 0, 0, EventData.TimeType.SKY),
         });
     }
@@ -91,10 +92,6 @@ public class EventData {
         return timeLeft.apply(time);
     };
 
-    public EventData() {
-        this("Empty");
-    }
-
     public EventData(String name) {
         this.name = name;
         stringValue = name + " - Empty Event";
@@ -109,12 +106,10 @@ public class EventData {
         this.stringValue = name + " - cooldown: " + cooldownSeconds + ", offset: " + offsetSeconds + ", duration: " + durationSeconds + ", type: " + timeType;
         this.timeType = timeType;
         this.timeLeft =
-                (time) -> {
-                    return (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
-                            % (cooldownSeconds);
-                };
+                (time) -> (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
+                        % (cooldownSeconds);
         this.cooldown = Math.max(cooldownSeconds, 1);
-        this.duration = Math.max(durationSeconds, 10);
+        this.duration = durationSeconds;
     }
 
     public EventData(String name, Integer[] days, int cooldownSeconds, int offsetSeconds, int durationSeconds, TimeType timeType) {
@@ -133,67 +128,37 @@ public class EventData {
                 (time) -> {
                     Integer currentDay = time.getDayOfWeek().getValue();
                     if (onDays.contains(currentDay)) {
-                        this.cooldown = cooldownSeconds;
-                    } else {
-                        Integer lastDay = onDays.getLast();
-                        Integer nextDay = onDays.getFirst();
-                        for (Integer day : onDays) {
-                            if (day > currentDay) {
-                                nextDay = day;
-                                break;
-                            }
-                        }
-                        lastDay = onDays.get((onDays.indexOf(nextDay) - 1 + onDays.size()) % onDays.size());
-                        if (Objects.equals(lastDay, nextDay)) {
-                            this.cooldown = 7*24*60*60;
-                        } else {
-                            this.cooldown = (long) ((lastDay > nextDay ? nextDay : nextDay - lastDay) + 1 % 7) * 24 * 60 * 60;
-                        }
+                        long next = (cooldownSeconds) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (cooldownSeconds))
+                                % (cooldownSeconds);
 
-                        return Duration.between(time, time.plusDays((nextDay - currentDay + 7) % 7).truncatedTo(ChronoUnit.DAYS)).getSeconds() + offsetSeconds;
+                        if (onDays.contains(time.plusSeconds(next).getDayOfWeek().getValue())) {
+                            this.cooldown = cooldownSeconds;
+                            return next;
+                        }
                     }
-                    return (this.cooldown) - ((time.getSecond() + (time.getMinute()*60) + (time.getHour()*60*60) + (time.getDayOfYear()*24*60*60) + ((long) time.getYear() *365*24*60*60)) - (offsetSeconds) + (this.cooldown))
-                            % (this.cooldown);
-
-//                    // Stole this from chatgpt (with a couple of tweaks), I'm way too dumb to code this
-//                    // Convert ZonedDateTime to day of week (1 = Monday, ..., 7 = Sunday)
-//                    int currentDay = time.getDayOfWeek().getValue();
-//                    long secondsSinceMidnight = time.getSecond() + (time.getHour() * 60*60);
-//                    long secondsUntilMidnight = 24 * 60 * 60 - secondsSinceMidnight;
-//
-//                    // Check for events on the current day
-//                    if (onDays.contains(currentDay)) {
-////                        if (onDays.getFirst() == currentDay) {
-////                            this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
-////                            System.out.println("Long");
-////                        } else {
-////                            this.cooldown = cooldownSeconds;
-////                            System.out.println("Short");
-////                        }
-//                        this.cooldown = cooldownSeconds;
-//
-//                        long elapsedSinceOffset = Math.max(0, secondsSinceMidnight - offsetSeconds);
-//
-//                        long nextEventToday = secondsSinceMidnight + cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
-//
-//                        if (nextEventToday < 24 * 60 * 60) { // If event still falls on the same day
-//                            return cooldownSeconds - (elapsedSinceOffset % cooldownSeconds);
-//                        }
-//                    }
-//
-//                    // Find the next available day
-//                    this.cooldown = (long) (7-onDays.getLast()+onDays.getFirst()) * 24*60*60;
-//                    for (int day : onDays) {
-//                        if (day > currentDay) {
-//                            return secondsUntilMidnight + (long) ((day - currentDay) - 1) * 24 * 60 * 60 + offsetSeconds;
-//                        }
-//                    }
-//
-//                    // If no more events this week, wrap to the first day of the next week
-//                    return secondsUntilMidnight + (long) ((7 - currentDay + onDays.getFirst()) - 1) * 24 * 60 * 60 + offsetSeconds;
+                    Integer lastDay;
+                    Integer nextDay = onDays.getFirst();
+                    for (Integer day : onDays) {
+                        if (day > currentDay) {
+                            nextDay = day;
+                            break;
+                        }
+                    }
+                    lastDay = onDays.get((onDays.indexOf(nextDay) - 1 + onDays.size()) % onDays.size());
+                    if (Objects.equals(lastDay, nextDay)) {
+                        this.cooldown = 7*24*60*60;
+                    } else {
+                        this.cooldown = (long) ((lastDay > nextDay ? nextDay : nextDay - lastDay) + 1 % 7) * 24 * 60 * 60;
+                    }
+                    return Duration.between(
+                            time,
+                            time.plusDays(
+                                    currentDay.equals(nextDay) ? 7 : ((nextDay - currentDay + 7) % 7)
+                            ).truncatedTo(ChronoUnit.DAYS)
+                    ).getSeconds() + offsetSeconds;
                 };
         this.cooldown = cooldownSeconds;
-        this.duration = Math.max(durationSeconds, 10);
+        this.duration = durationSeconds;
     }
 
     public EventData(String name, ZonedDateTime start, ZonedDateTime end, long cooldownAfterEnd) {
@@ -216,7 +181,7 @@ public class EventData {
             }
         };
         this.cooldown = 0;
-        this.duration = 10;
+        this.duration = 0;
     }
 
     public String getName() {
@@ -235,8 +200,15 @@ public class EventData {
         if (timeLeft == null) {
             return false;
         }
-//        return false;
-        return (cooldown - timeLeft) <= duration;
+//        if (name.equals("Music Sheet Reset")) {
+//            System.out.println(cooldown + " - " + timeLeft + " <= " + duration + " = " + ((cooldown - timeLeft) <= duration));
+//        }
+
+        if (duration <= 0) {
+            return false;
+        } else {
+            return (cooldown - timeLeft) <= duration;
+        }
     }
 
     public float percentElapsed(ZonedDateTime[] times) {
