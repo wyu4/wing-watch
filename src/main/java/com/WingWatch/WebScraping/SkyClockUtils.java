@@ -73,6 +73,6 @@ public abstract class SkyClockUtils {
         if (zone == null) {
             return null;
         }
-        return ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        return ZonedDateTime.now(zone).truncatedTo(ChronoUnit.SECONDS);
     }
 }
