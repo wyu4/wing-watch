@@ -148,12 +148,18 @@ public class EventData {
                     if (Objects.equals(lastDay, nextDay)) {
                         this.cooldown = 7*24*60*60;
                     } else {
-                        this.cooldown = (long) ((lastDay > nextDay ? nextDay : nextDay - lastDay) + 1 % 7) * 24 * 60 * 60;
+//                        if (name.equals("Dream Skater")) {
+//                            System.out.println(currentDay + ", " + lastDay + " - " + nextDay);
+//                        }
+                        this.cooldown = (long) ((lastDay > nextDay ? nextDay + (7-lastDay) : nextDay - lastDay) + 1 % 7) * 24 * 60 * 60;
                     }
                     return Duration.between(
                             time,
                             time.plusDays(
+                                    ////////////////////////////////////
+                                    // Must be changed
                                     currentDay.equals(nextDay) ? 7 : ((nextDay - currentDay + 7) % 7)
+                                    ////////////////////////////////////
                             ).truncatedTo(ChronoUnit.DAYS)
                     ).getSeconds() + offsetSeconds;
                 };
@@ -200,7 +206,7 @@ public class EventData {
         if (timeLeft == null) {
             return false;
         }
-//        if (name.equals("Music Sheet Reset")) {
+//        if (name.equals("Dream Skater")) {
 //            System.out.println(cooldown + " - " + timeLeft + " <= " + duration + " = " + ((cooldown - timeLeft) <= duration));
 //        }
 
