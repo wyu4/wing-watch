@@ -75,9 +75,9 @@ public class EventData {
             return new EventData[0];
         }
         return ifPresetNotFoundReturn("SEASONAL_EVENTS", new EventData[] {
-                WikiUtils.getTravellingSpirit(currentTime),
-                WikiUtils.getSeasonEvent(currentTime),
-                WikiUtils.getDaysEvent(currentTime)
+                WikiUtils.getTravellingSpirit(currentTime.getZone()),
+                WikiUtils.getSeasonEvent(currentTime.getZone()),
+                WikiUtils.getDaysEvent(currentTime.getZone())
         });
     }
 
@@ -169,22 +169,24 @@ public class EventData {
 
     public EventData(String name, ZonedDateTime start, ZonedDateTime end, long cooldownAfterEnd) {
         this.name = name;
-        this.stringValue = name + " - starting at: " + start.toString() + ", ending at: " + end.toString() + ", with (theoretical) cooldown " + cooldownAfterEnd + ".";
+        this.stringValue = name + " - starting at: " + start + ", ending at: " + end + ", with (theoretical) cooldown " + cooldownAfterEnd + ".";
         this.timeType = TimeType.SKY;
         this.timeLeft = (time) -> {
+            if (start == null || end == null) {
+                return null;
+            }
             if (Duration.between(time, end).isPositive()) {
                 this.duration = Duration.between(start, end).getSeconds();
                 this.cooldown = Duration.between(start, end.plusSeconds(cooldownAfterEnd)).getSeconds();
                 if (Duration.between(time, start).isNegative()) {
                     return Duration.between(time, end.plusSeconds(cooldownAfterEnd)).getSeconds();
-                } else {
-                    return Duration.between(time, start).getSeconds();
                 }
+                return Duration.between(time, start).getSeconds();
             } else {
                 this.duration = 0L;
                 this.cooldown = 1L;
-                return null;
             }
+            return null;
         };
         this.cooldown = 0;
         this.duration = 0;

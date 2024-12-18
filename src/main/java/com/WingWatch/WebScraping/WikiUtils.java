@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 
@@ -46,63 +47,56 @@ public abstract class WikiUtils {
         }
     }
 
-    private static ZonedDateTime[] getPeriod(ZonedDateTime defaultTime, String dateText) {
-        ZonedDateTime[] result = {defaultTime, defaultTime};
-        try {
-            if (dateText == null) {
-                throw new NullPointerException("dateText must not be null.");
-            }
+    private static ZonedDateTime[] getPeriod(ZoneId zone, String dateText) throws NullPointerException, IllegalArgumentException {
+        ZonedDateTime[] result = {null, null};
+        if (dateText == null) {
+            throw new NullPointerException("dateText must not be null.");
+        }
+        String[] dateData = dateText.toUpperCase().replaceAll("\\p{Punct}", "").split(" ");
+        Integer month1 = null;
+        Integer day1 = null;
+        Integer month2 = null;
+        Integer day2 = null;
+        Integer year1 = null;
+        Integer year2 = null;
 
-            String[] dateData = dateText.toUpperCase().replaceAll("\\p{Punct}", "").split(" ");
-
-            Integer month1 = null;
-            Integer day1 = null;
-            Integer month2 = null;
-            Integer day2 = null;
-            Integer year1 = null;
-            Integer year2 = null;
-
-            for (int i = 0; i < dateData.length; i++) {
-                String item = dateData[i];
-                try {
-                    int number = Integer.parseInt(item);
-                    if (number <= 31) {
-                        if (day1 == null) {
-                            day1 = number;
-                        } else {
-                            day2 = number;
-                        }
+        for (int i = 0; i < dateData.length; i++) {
+            String item = dateData[i];
+            try {
+                int number = Integer.parseInt(item);
+                if (number <= 31) {
+                    if (day1 == null) {
+                        day1 = number;
                     } else {
-                        if (year1 == null) {
-                            year1 = number;
-                        } else {
-                            year2 = number;
-                        }
+                        day2 = number;
                     }
-                } catch(NumberFormatException e) {
-                    if (MONTHS.containsKey(item)) {
-                        if (month1 == null) {
-                            month1 = MONTHS.get(item);
-                        } else {
-                            month2 = MONTHS.get(item);
-                        }
+                } else {
+                    if (year1 == null) {
+                        year1 = number;
+                    } else {
+                        year2 = number;
+                    }
+                }
+            } catch(NumberFormatException e) {
+                if (MONTHS.containsKey(item)) {
+                    if (month1 == null) {
+                        month1 = MONTHS.get(item);
+                    } else {
+                        month2 = MONTHS.get(item);
                     }
                 }
             }
-
-            month1 = (month1==null ? defaultTime.getMonthValue() : month1);
-            day1 = (day1==null ? defaultTime.getDayOfMonth() : day1);
-            year1 = (year1==null ? defaultTime.getYear() : year1);
-            month2 = (month2==null ? month1 : month2);
-            day2 = (day2==null ? day1 : day2);
-            year2 = (year2==null ? year1 : year2);
-
-            result[0] = ZonedDateTime.of(year1, month1, day1, 0, 0, 0, 0, defaultTime.getZone());
-            result[1] = ZonedDateTime.of(year2, month2, day2+1, 0, 0, 0, 0, defaultTime.getZone());
-        } catch (Exception e) {
-            System.err.println("Could not get the time range from text \"" + dateText + "\": " + e);
         }
 
+        if (day1 == null || month1 == null || year1 == null) {
+            throw new IllegalArgumentException("dateText \"" + dateText + "\" is formatted incorrectly (ie. {month1} {day1} {year1} {month2} {day2} {year2})");
+        }
+        month2 = (month2==null ? month1 : month2);
+        day2 = (day2==null ? day1 : day2);
+        year2 = (year2==null ? year1 : year2);
+
+        result[0] = ZonedDateTime.of(year1, month1, day1, 0, 0, 0, 0, zone);
+        result[1] = ZonedDateTime.of(year2, month2, day2+1, 0, 0, 0, 0, zone);
         return result;
     }
 
@@ -112,54 +106,49 @@ public abstract class WikiUtils {
         SOURCES.put(MAIN_PAGE, getSource(MAIN_PAGE));
     }
 
-    public static EventData getTravellingSpirit(ZonedDateTime currentTime) {
+    public static EventData getTravellingSpirit(ZoneId zone) {
         String source = SOURCES.get(TRAVELLING_SPIRIT);
+        ZonedDateTime[] period = new ZonedDateTime[2];
 
         try {
             if (source == null) {
                 throw new NullPointerException("Source not found!?");
             }
             Document doc = Jsoup.parse(source);
-            Element nameClass = doc.selectFirst("h2[data-source=title]");
+
+            Element widget = doc.selectFirst("aside.portable-infobox.pi-background.pi-border-color.pi-theme-wikia.pi-layout-default.type-TravelingSpirit");
+            if (widget == null) {
+                throw new NullPointerException("Widget not found in source.");
+            }
+
+            Element nameClass = widget.selectFirst("h2[data-source=title]");
             if (nameClass != null) {
                 LocalCache.setValue("TravellingSpiritName", nameClass.text());
             } else {
                 throw new NullPointerException("Name not found in source.");
             }
 
-            Element dateClass = doc.selectFirst(".pi-data-value.pi-font");
+            Element dateClass = widget.selectFirst("div[data-source=date]");
             if (dateClass != null) {
                 LocalCache.setValue("TravellingSpiritDate", dateClass.text());
             } else {
                 throw new NullPointerException("Date not found in Traveling Spirit source.");
             }
-
+            period = getPeriod(zone, LocalCache.getValue("TravellingSpiritDate"));
         } catch (Exception e) {
             System.err.println("Could not create travelling spirit event: " + e.getMessage());
-//            return new EventData(LocalCache.getValue("TravellingSpiritName", "Travelling Spirit"));
         }
-        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("TravellingSpiritDate"));
         return new EventData(LocalCache.getValue("TravellingSpiritName", "Travelling Spirit"), period[0], period[1], 14*24*60*60);
     }
 
-    public static EventData getSeasonEvent(ZonedDateTime currentTime) {
+    public static EventData getSeasonEvent(ZoneId zone) {
         String source = SOURCES.get(SEASONAL_EVENTS);
-
+        ZonedDateTime[] period = new ZonedDateTime[2];
         try {
             if (source == null) {
                 throw new NullPointerException("Source not found!?");
             }
             Document doc = Jsoup.parse(source);
-//            Element nameSection = doc.selectFirst("li:has(span:matchesOwn(Seasons & Events))");
-//            if (nameSection == null) {
-//                throw new NullPointerException("Seasons & Events section not found in Seasonal Source.");
-//            }
-//            Element latestSeasonName = nameSection.selectFirst(".wds-dropdown__content ul.wds-list li span");
-//            if (latestSeasonName != null) {
-//                nameText = latestSeasonName.text();
-//            } else {
-//                throw new NullPointerException("Latest name not found in Seasonal Source's section.");
-//            }
 
             Element articleTable = doc.selectFirst("table.article-table");
             if (articleTable == null) {
@@ -182,18 +171,17 @@ public abstract class WikiUtils {
             } else {
                 LocalCache.setValue("SeasonDate", dateClass.text());
             }
-
+            period = getPeriod(zone, LocalCache.getValue("SeasonDate"));
         }  catch (Exception e) {
             System.err.println("Could not create season event: " + e);
-//            return new EventData(LocalCache.getValue("SeasonName", "Season of ???"));
         }
-        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("SeasonDate"));
         return new EventData(LocalCache.getValue("SeasonName", "Season of ???"), period[0], period[1], 14*24*60*60);
     }
 
-    public static EventData getDaysEvent(ZonedDateTime currentTime) {
+    public static EventData getDaysEvent(ZoneId zone) {
         // Using the main page because the wiki doesn't have its own isolated page dedicated to current "days of" events. Should be changed once one has been found.
         String source = SOURCES.get(MAIN_PAGE);
+        ZonedDateTime[] period = new ZonedDateTime[2];
         try {
             if (source == null) {
                 throw new NullPointerException("Source not found!?");
@@ -223,12 +211,20 @@ public abstract class WikiUtils {
             } else {
                 LocalCache.setValue("DaysDate", dateNode.text());
             }
+            period = getPeriod(zone, LocalCache.getValue("DaysDate"));
         } catch (Exception e) {
             System.err.println("Could not create days event: " + e);
-//            return new EventData(LocalCache.getValue("DaysName", "Days of ???"));
         }
 
-        ZonedDateTime[] period = getPeriod(currentTime, LocalCache.getValue("DaysDate"));
         return new EventData(LocalCache.getValue("DaysName", "Days of ???"), period[0], period[1], 365*24*60*60);
     }
+
+//    public static void main(String[] args) throws IOException {
+//        File output = new File("test.html");
+//        output.createNewFile();
+//        System.setOut(new PrintStream(output));
+//
+//        refreshSources();
+//        System.out.println(SOURCES.get(TRAVELLING_SPIRIT));
+//    }
 }
