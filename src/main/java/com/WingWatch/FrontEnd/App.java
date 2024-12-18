@@ -16,7 +16,7 @@ import java.util.List;
 
 public class App extends JFrame implements ActionListener, WindowListener, Refreshable {
     private static List<App> SESSIONS = new ArrayList<>();
-    public static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+    public static volatile Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
     private ZonedDateTime[] times = new ZonedDateTime[2];
     private final Timer runtime = new Timer(1, this);
@@ -31,13 +31,13 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
             resetEvents = new OrderedSchedule(),
             dayCycleEvents = new OrderedSchedule();
     private final ConfigTab configs = new ConfigTab();
-    private Long lastFrame = null;
-    private ZonedDateTime testTime1, testTime2;
+    private Long lastFrame = null, lastUpdate;
 
     public App() {
         super("Sky Events");
 
-        refreshData();
+        lastUpdate = System.currentTimeMillis();
+        updateDataNoThread();
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -67,7 +67,16 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
     }
 
     @Override
-    public void refreshData() {
+    public void updateData() {
+        if (lastUpdate != null && System.currentTimeMillis() - lastUpdate <= 60000) {
+            return;
+        }
+        lastUpdate = System.currentTimeMillis();
+
+        new Thread(this::updateDataNoThread).start();
+    }
+
+    private void updateDataNoThread() {
         SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
         SkyClockUtils.refreshData();
         WikiUtils.refreshSources();
@@ -79,6 +88,9 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
         seasonalEvents.trackEvents(EventData.getSeasonalEvents());
         resetEvents.trackEvents(EventData.getResets());
         dayCycleEvents.trackEvents(EventData.getDayCycle());
+
+        System.out.println("Data refreshed.");
+        Thread.currentThread().interrupt();
     }
 
     @Override
@@ -86,10 +98,12 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
         if (!e.getSource().equals(runtime)) {
             return;
         }
+
         if (lastFrame == null) {
             lastFrame = System.currentTimeMillis();
             return;
         }
+
         if (!SESSIONS.getFirst().equals(this)) {
             SESSIONS.getFirst().closeFrame();
         }
@@ -105,6 +119,8 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
 
         repaint();
         lastFrame = System.currentTimeMillis();
+
+        updateData();
     }
 
     @Override

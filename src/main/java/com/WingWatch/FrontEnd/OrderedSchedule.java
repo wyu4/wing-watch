@@ -15,7 +15,7 @@ import java.util.List;
 public class OrderedSchedule extends JScrollPane {
     private static final List<OrderedSchedule> SCHEDULES = new ArrayList<>();
 
-    private final HashMap<EventData, EventDisplay> schedule = new HashMap<>();
+    private final HashMap<String, EventDisplay> schedule = new HashMap<>();
     private final JLayeredPane contentPane = new JLayeredPane();
     private EventData[] orderedEvents;
 
@@ -54,13 +54,13 @@ public class OrderedSchedule extends JScrollPane {
     public void trackEvents(EventData[] events) {
         this.orderedEvents = events;
         for (EventData event : events) {
-            schedule.put(event, getScheduleComponentOf(event));
+            schedule.put(event.getName(), getScheduleComponentOf(event));
         }
     }
 
     private EventDisplay getScheduleComponentOf(EventData event) {
-        if (schedule.containsKey(event)) {
-            return schedule.get(event);
+        if (schedule.containsKey(event.getName())) {
+            return schedule.get(event.getName());
         }
         return new EventDisplay(event);
     }
@@ -150,11 +150,11 @@ public class OrderedSchedule extends JScrollPane {
 
 class EventDisplay extends JPanel {
     private final ContentPanel contentPanel = new ContentPanel();
-    private final EventData linkedData;
+    private EventData linkedData;
     private int index = 0;
 
     public EventDisplay(EventData linkedData) {
-        this.linkedData = linkedData;
+        relinkData(linkedData);
 
         setName("EventDisplay-" + linkedData.getName());
         setBackground(UIManager.getColor("Schedule.PadColor"));
@@ -166,6 +166,17 @@ class EventDisplay extends JPanel {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public void relinkData(EventData linkedData) {
+        this.linkedData = linkedData;
+    }
+
+    public String getEventName() {
+        if (linkedData == null) {
+            return "???";
+        }
+        return linkedData.getName();
     }
 
     private void resizeBasedOnParent(Component parent) {
