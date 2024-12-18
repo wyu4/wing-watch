@@ -108,9 +108,9 @@ public class OrderedSchedule extends JScrollPane {
             comp.step(times, timeMod);
             componentsToShow[i] = comp;
             if (!Arrays.asList(componentsShown).contains(comp)) {
-                contentPane.add(comp, componentsToShow.length-i, 0);
+                contentPane.add(comp, i, 0);
             } else {
-                contentPane.setLayer(comp, componentsToShow.length-i);
+                contentPane.setLayer(comp, i);
             }
             if (i == orderedEvents.length-1) {
                 lastDisplay = comp;
