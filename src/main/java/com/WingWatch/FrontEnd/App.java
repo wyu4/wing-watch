@@ -68,7 +68,7 @@ public class App extends JFrame implements ActionListener, WindowListener, Refre
 
     @Override
     public void updateData() {
-        if (lastUpdate != null && System.currentTimeMillis() - lastUpdate <= 60000) {
+        if (lastUpdate != null && System.currentTimeMillis() - lastUpdate <= 600000) {
             return;
         }
         lastUpdate = System.currentTimeMillis();
