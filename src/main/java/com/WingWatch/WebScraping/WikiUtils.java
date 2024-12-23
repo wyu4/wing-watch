@@ -95,6 +95,12 @@ public abstract class WikiUtils {
         day2 = (day2==null ? day1 : day2);
         year2 = (year2==null ? year1 : year2);
 
+        if (month1 > month2 || (month1.equals(month2) && day1 > day2)) {
+            int temp = year1;
+            year1 = year2 - 1;
+            year2 = temp;
+        }
+
         result[0] = ZonedDateTime.of(year1, month1, day1, 0, 0, 0, 0, zone);
         result[1] = ZonedDateTime.of(year2, month2, day2+1, 0, 0, 0, 0, zone);
         return result;
