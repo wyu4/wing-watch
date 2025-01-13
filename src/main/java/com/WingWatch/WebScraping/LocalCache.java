@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.*;
 import java.util.HashMap;
 
-public class LocalCache {
+public abstract class LocalCache {
     private static final String FILE_NAME = "cache.json";
     private static final Gson mapper = new Gson();
 
