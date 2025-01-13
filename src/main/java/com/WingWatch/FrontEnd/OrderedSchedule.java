@@ -87,10 +87,13 @@ public class OrderedSchedule extends JScrollPane {
 
     private double getSortValue(ZonedDateTime[] times, EventData event) {
         Long timeLeft = event.getTimeLeft(times);
-        if (timeLeft == null) {
-            return Double.MAX_VALUE;
-        }
-        return event.active(times) ? -event.percentElapsed(times) : event.getTimeLeft(times);
+
+        return switch (event.calculateState(times)) {
+            case NEXT_IN -> timeLeft;
+            case ONGOING -> -timeLeft;
+            case LAST_IN -> Integer.MAX_VALUE - Math.abs(timeLeft);
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     public void step(ZonedDateTime[] times, float timeMod) {
@@ -216,8 +219,8 @@ class EventDisplay extends JPanel {
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClockUtils.formatTimeLeft(linkedData.active(times) ? linkedData.durationLeft(times) : (linkedData.getTimeLeft(times) == null ? -1 : linkedData.getTimeLeft(times))),
-                linkedData.active(times),
+                SkyClockUtils.formatTimeLeft(linkedData.getTimeLeft(times)),
+                linkedData.calculateState(times),
                 linkedData.percentElapsed(times)
         );
     }
@@ -232,7 +235,7 @@ class ContentPanel extends JPanel {
     private final JLabel indexLabel = new JLabel("0", SwingConstants.CENTER);
     private final JLabel nameLabel = new JLabel("?", SwingConstants.LEFT);
     private final JLabel timeLabel = new JLabel("00:00:00:00", SwingConstants.RIGHT);
-    private final JLabel activeLabel = new JLabel("?", SwingConstants.RIGHT);
+    private final JLabel stateLabel = new JLabel("", SwingConstants.RIGHT);
     private final JProgressBar progress = new JProgressBar();
 
     public ContentPanel() {
@@ -245,7 +248,7 @@ class ContentPanel extends JPanel {
         nameLabel.setDoubleBuffered(true);
         timeLabel.setDoubleBuffered(true);
         progress.setDoubleBuffered(true);
-        activeLabel.setDoubleBuffered(true);
+        stateLabel.setDoubleBuffered(true);
 
         progress.setMinimum(0);
         progress.setMaximum(1000);
@@ -263,7 +266,7 @@ class ContentPanel extends JPanel {
 
         constraints.weightx = 0;
         constraints.gridx = 3; constraints.gridy = 1;
-        add(activeLabel, constraints);
+        add(stateLabel, constraints);
 
         constraints.weightx = 0;
         constraints.gridx = 4; constraints.gridy = 1;
@@ -278,7 +281,7 @@ class ContentPanel extends JPanel {
             int index,
             String eventName,
             String time,
-            boolean active,
+            EventData.EventState state,
             float percent
     ) {
         int desiredFontSize = (int) (getHeight() * 0.3f);
@@ -292,17 +295,38 @@ class ContentPanel extends JPanel {
         timeLabel.setFont(new Font(timeLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.1f)));
         timeLabel.setText(time);
 
-        activeLabel.setFont(new Font(nameLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.2f)));
+        stateLabel.setFont(new Font(nameLabel.getFont().getName(), Font.BOLD, (int) (desiredFontSize * 1.2f)));
 
-        if (active) {
-            activeLabel.setText("Ending in: ");
-            activeLabel.setForeground(new Color(180, 255, 180));
-            progress.setForeground(new Color(0, 255, 0));
-        } else {
-            activeLabel.setText("Next in: ");
-            activeLabel.setForeground(new Color(255, 255, 255));
-            progress.setForeground(new Color(47, 69, 89));
+        String stateText;
+        Color stateColor, progressColor;
+
+        switch (state) {
+            case NEXT_IN -> {
+                stateText = "Next in: ";
+                stateColor = new Color(255, 255, 255);
+                progressColor = new Color(47, 69, 89);
+            }
+            case ONGOING -> {
+                stateText = "Ending in: ";
+                stateColor = new Color(180, 255, 180);
+                progressColor = new Color(0, 255, 0);
+            }
+            case LAST_IN -> {
+                stateText = "Ended in:";
+                stateColor = new Color(255, 180, 180);
+                progressColor = new Color(89, 47, 47);
+            }
+            default -> {
+                stateText = "";
+                stateColor = getBackground();
+                progressColor = stateColor;
+            }
         }
+
+        stateLabel.setText(stateText);
+        stateLabel.setForeground(stateColor);
+        progress.setForeground(progressColor);
+
         progress.setValue((int)(progress.getMaximum()*Math.clamp(percent, 0, 1f)));
         progress.setString("%" + percent);
     }

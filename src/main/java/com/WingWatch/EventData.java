@@ -14,6 +14,10 @@ public class EventData {
         SKY, LOCAL
     }
 
+    public enum EventState {
+        NEXT_IN, ONGOING, LAST_IN, UNKNOWN
+    }
+
     private static final HashMap<String, EventData[]> PRESET_EVENTS = new HashMap<>();
 
     public static void clearPresets() {
@@ -175,7 +179,8 @@ public class EventData {
             if (start == null || end == null) {
                 return null;
             }
-            if (Duration.between(time, end).isPositive()) {
+            Duration currentToEnd = Duration.between(time, end);
+            if (currentToEnd.isPositive()) {
                 this.duration = Duration.between(start, end).getSeconds();
                 this.cooldown = Duration.between(start, end.plusSeconds(cooldownAfterEnd)).getSeconds();
                 if (Duration.between(time, start).isNegative()) {
@@ -183,10 +188,12 @@ public class EventData {
                 }
                 return Duration.between(time, start).getSeconds();
             } else {
-                this.duration = 0L;
-                this.cooldown = 1L;
+//                System.out.println(name + ": " + Duration.between(time, end).getSeconds());
+                return currentToEnd.getSeconds();
+//                this.duration = 0L;
+//                this.cooldown = 1L;
             }
-            return null;
+//            return null;
         };
         this.cooldown = 0;
         this.duration = 0;
@@ -203,25 +210,31 @@ public class EventData {
         };
     }
 
-    public boolean active(ZonedDateTime[] times) {
+    public EventState calculateState(ZonedDateTime[] times) {
         Long timeLeft = getTimeLeft(times);
         if (timeLeft == null) {
-            return false;
+            return EventState.UNKNOWN;
         }
 //        if (name.equals("Dream Skater")) {
 //            System.out.println(cooldown + " - " + timeLeft + " <= " + duration + " = " + ((cooldown - timeLeft) <= duration));
 //        }
 
-        if (duration <= 0) {
-            return false;
-        } else {
-            return (cooldown - timeLeft) <= duration;
+        if (timeLeft >= 0 && duration >= 0) {
+            if ((cooldown - timeLeft) <= duration) {
+                return EventState.ONGOING;
+            }
+            return EventState.NEXT_IN;
         }
+        return EventState.LAST_IN;
+    }
+
+    public boolean active(ZonedDateTime[] times) {
+        return calculateState(times) == EventState.ONGOING;
     }
 
     public float percentElapsed(ZonedDateTime[] times) {
         Long timeLeft = getTimeLeft(times);
-        if (timeLeft == null) {
+        if (timeLeft == null || timeLeft < 0) {
             return 0f;
         }
         if (active(times)) {

@@ -44,9 +44,10 @@ public abstract class SkyClockUtils {
     }
 
     public static String formatTimeLeft(Long remainingTime) {
-        if (remainingTime == null || remainingTime < 0) {
+        if (remainingTime == null) {
             return "???";
         }
+        remainingTime = Math.abs(remainingTime);
         return String.format("%02d : %02d : %02d : %02d",
                 remainingTime/(60*60*24),
                 remainingTime/(60*60) % 24,
