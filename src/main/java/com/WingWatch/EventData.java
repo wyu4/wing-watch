@@ -228,16 +228,16 @@ public class EventData {
         return EventState.LAST_IN;
     }
 
-    public boolean active(ZonedDateTime[] times) {
-        return calculateState(times) == EventState.ONGOING;
-    }
+//    public boolean active(ZonedDateTime[] times) {
+//        return calculateState(times) == EventState.ONGOING;
+//    }
 
     public float percentElapsed(ZonedDateTime[] times) {
         Long timeLeft = getTimeLeft(times);
         if (timeLeft == null || timeLeft < 0) {
             return 0f;
         }
-        if (active(times)) {
+        if (calculateState(times) == EventState.ONGOING) {
             return Math.clamp(1f - ((float) (cooldown - timeLeft) / duration), 0, 1f);
         } else {
             return Math.clamp(((float) ((cooldown - duration) - timeLeft) / (cooldown - duration)), 0, 1f);

@@ -216,11 +216,16 @@ class EventDisplay extends JPanel {
                 (int)(App.SCREEN_SIZE.width*0.005)/2,0,
                 getWidth()-((int)(App.SCREEN_SIZE.width*0.005)), getHeight()
         );
+
+        EventData.EventState currentState = linkedData.calculateState(times);
+        Long timeLeft = linkedData.getTimeLeft(times);
         contentPanel.updateContent(
                 index,
                 linkedData.getName(),
-                SkyClockUtils.formatTimeLeft(linkedData.getTimeLeft(times)),
-                linkedData.calculateState(times),
+                SkyClockUtils.formatTimeLeft(currentState == EventData.EventState.ONGOING ? linkedData.durationLeft(times) :
+                                (timeLeft == null ? Long.MIN_VALUE : timeLeft)
+                        ),
+                currentState,
                 linkedData.percentElapsed(times)
         );
     }

@@ -44,7 +44,7 @@ public abstract class SkyClockUtils {
     }
 
     public static String formatTimeLeft(Long remainingTime) {
-        if (remainingTime == null) {
+        if (remainingTime == null || remainingTime == Long.MIN_VALUE) {
             return "???";
         }
         remainingTime = Math.abs(remainingTime);
