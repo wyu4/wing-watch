@@ -175,7 +175,7 @@ public abstract class WikiUtils {
             if (dateClass == null) {
                 throw new NullPointerException("Latest season period in row in Article table not found in Seasonal Source.");
             } else {
-                LocalCache.setValue("SeasonDate", dateClass.text());
+//                LocalCache.setValue("SeasonDate", dateClass.text());
             }
             period = getPeriod(zone, LocalCache.getValue("SeasonDate"));
         }  catch (Exception e) {

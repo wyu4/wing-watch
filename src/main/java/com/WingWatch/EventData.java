@@ -179,22 +179,34 @@ public class EventData {
             if (start == null || end == null) {
                 return null;
             }
-            Duration currentToEnd = Duration.between(time, end);
-            if (currentToEnd.isPositive()) {
+            long currentToEnd = Duration.between(time, end).getSeconds();
+            if (currentToEnd >= 0) {
                 this.duration = Duration.between(start, end).getSeconds();
                 this.cooldown = Duration.between(start, end.plusSeconds(cooldownAfterEnd)).getSeconds();
-                if (Duration.between(time, start).isNegative()) {
+                if (Duration.between(time, start).getSeconds() <= 0) {
                     return Duration.between(time, end.plusSeconds(cooldownAfterEnd)).getSeconds();
                 }
                 return Duration.between(time, start).getSeconds();
             } else {
 //                System.out.println(name + ": " + Duration.between(time, end).getSeconds());
-                return currentToEnd.getSeconds();
+                return currentToEnd;
 //                this.duration = 0L;
 //                this.cooldown = 1L;
             }
 //            return null;
         };
+        this.cooldown = 0;
+        this.duration = 0;
+    }
+
+    public EventData(String name, Function<ZonedDateTime, Long> timeLeft, Function<ZonedDateTime, Long> calcCooldown) {
+        this.name = name;
+        this.stringValue = name + " - with custom timeLeft() function.";
+        this.timeLeft = (time) -> {
+            cooldown = calcCooldown.apply(time);
+            return timeLeft.apply(time);
+        };
+        this.timeType = TimeType.SKY;
         this.cooldown = 0;
         this.duration = 0;
     }
