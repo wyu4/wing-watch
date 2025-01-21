@@ -1,14 +1,8 @@
 package com.WingWatch;
 
-import com.WingWatch.FrontEnd.App;
-import com.WingWatch.FrontEnd.Themes.WingWatchDark;
-import com.formdev.flatlaf.FlatLaf;
-
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URISyntaxException;
 
 
 public class Start {
