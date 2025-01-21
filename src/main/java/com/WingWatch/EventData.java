@@ -6,6 +6,7 @@ import com.WingWatch.WebScraping.WikiUtils;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.function.Function;
 
@@ -60,7 +61,14 @@ public class EventData {
 
     public static EventData[] getConcertsShows() {
         return ifPresetNotFoundReturn("CONCERT_SHOWS", new EventData[] {
-                new EventData("Aurora", 4*60*60, (2*60*60)+(10*60), 50*60, EventData.TimeType.SKY)
+                new EventData("Aurora", 4*60*60, (2*60*60)+(10*60), 50*60, EventData.TimeType.SKY),
+                new EventData("Fireworks",
+                        (time) -> Duration.between(time, ZonedDateTime.of(time.getYear(), time.getMonthValue(), 1, 0, 0, 0, 0, time.getZone()).plusMonths(1)).getSeconds(),
+                        (time) -> {
+                            ZonedDateTime last = ZonedDateTime.of(time.getYear(), time.getMonthValue(), 1, 0, 0, 0, 0, time.getZone());
+                            return Duration.between(last, last.plusMonths(1)).getSeconds();
+                        }
+                        )
         });
     }
 

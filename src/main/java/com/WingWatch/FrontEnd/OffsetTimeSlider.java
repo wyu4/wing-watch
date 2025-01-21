@@ -28,8 +28,8 @@ public class OffsetTimeSlider extends JPanel implements ActionListener {
         stepForward.addActionListener(this);
         stepForward.setFocusPainted(false);
 
-        slider.setMinimum(-2*24*60*60);
-        slider.setMaximum(2*24*60*60);
+        slider.setMinimum(-24*60*60);
+        slider.setMaximum(24*60*60);
         slider.setValue(0);
         slider.setFocusable(false);
 
