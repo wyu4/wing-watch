@@ -22,9 +22,9 @@ jobs:
 
       - name: STEP 4 - List Files
         run: |
-          echo Working Directory:
+          echo --------------------- Working Directory --------------------- 
           Get-ChildItem -Force
-          echo Target Directory:
+          echo --------------------- Target Directory --------------------- 
           cd target
           Get-ChildItem -Force
           
