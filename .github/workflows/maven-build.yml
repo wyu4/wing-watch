@@ -21,9 +21,10 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: STEP 4 - List Files
-        run: Get-ChildItem -Force
-
-      - name: STEP 5 - List Target Files In Target Directory
         run: |
+          echo Working Directory:
+          Get-ChildItem -Force
+          echo Target Directory:
           cd target
           Get-ChildItem -Force
+          
